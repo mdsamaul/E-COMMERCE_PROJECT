@@ -23,7 +23,17 @@ class AdminMiddleware
             return redirect()->route('admin.login')->with('error', 'Please log in to access the admin area.');
         }
 
-        if (!Auth::user()->isAdmin()) {
+        $user = Auth::user();
+
+        if (!$user->is_active) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('admin.login')->with('error', 'Your administrator account has been deactivated. Please contact support.');
+        }
+
+        if (!$user->isAdmin()) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized: Admin access required.'], 403);
             }

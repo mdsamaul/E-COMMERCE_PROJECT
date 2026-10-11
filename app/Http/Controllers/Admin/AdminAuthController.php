@@ -18,8 +18,14 @@ class AdminAuthController extends Controller
 
     public function showLoginForm(): View|RedirectResponse
     {
-        if (Auth::check() && Auth::user()->isAdmin()) {
-            return redirect()->route('admin.dashboard');
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user->isSuperAdmin()) {
+                return redirect()->route('superadmin.dashboard');
+            }
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
         }
 
         return view('admin.auth.login');
@@ -46,6 +52,11 @@ class AdminAuthController extends Controller
 
         $request->clearRateLimit();
         $request->session()->regenerate();
+
+        $user = $result['user'];
+        if ($user && $user->isSuperAdmin()) {
+            return redirect()->intended(route('superadmin.dashboard'))->with('success', 'Super Admin session authenticated.');
+        }
 
         return redirect()->intended(route('admin.dashboard'))->with('success', 'Admin session authenticated.');
     }

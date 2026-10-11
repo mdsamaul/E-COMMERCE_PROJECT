@@ -168,51 +168,84 @@
             </a>
 
             <div class="admin-nav">
+                @if(auth()->user()->isSuperAdmin())
+                    <div class="mb-3 px-2">
+                        <a href="{{ route('superadmin.dashboard') }}" class="btn btn-warning text-dark btn-sm w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-shield-lock-fill"></i> Super Admin Portal
+                        </a>
+                    </div>
+                @endif
+
                 <div class="admin-nav-heading">Main Overview</div>
                 <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
-                <a href="{{ route('admin.orders.index') }}" class="admin-nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                    <i class="bi bi-bag-check"></i> Orders & Sales
-                </a>
+                @if(auth()->user()->hasPermission('orders.view'))
+                    <a href="{{ route('admin.orders.index') }}" class="admin-nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                        <i class="bi bi-bag-check"></i> Orders & Sales
+                    </a>
+                @endif
 
                 <div class="admin-nav-heading">Catalog & Stock</div>
-                <a href="{{ route('admin.products.index') }}" class="admin-nav-link {{ request()->routeIs('admin.products.*') && !request()->routeIs('admin.products.stock*') ? 'active' : '' }}">
-                    <i class="bi bi-box-seam"></i> Products
-                </a>
-                <a href="{{ route('admin.products.stock') }}" class="admin-nav-link {{ request()->routeIs('admin.products.stock*') ? 'active' : '' }}">
-                    <i class="bi bi-boxes"></i> Inventory & Stock
-                </a>
-                <a href="{{ route('admin.categories.index') }}" class="admin-nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-                    <i class="bi bi-grid-3x3-gap"></i> Categories
-                </a>
-                <a href="{{ route('admin.brands.index') }}" class="admin-nav-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
-                    <i class="bi bi-tag"></i> Brands
-                </a>
+                @if(auth()->user()->hasPermission('products.view'))
+                    <a href="{{ route('admin.products.index') }}" class="admin-nav-link {{ request()->routeIs('admin.products.*') && !request()->routeIs('admin.products.stock*') ? 'active' : '' }}">
+                        <i class="bi bi-box-seam"></i> Products
+                    </a>
+                @endif
+                @if(auth()->user()->hasPermission('products.stock'))
+                    <a href="{{ route('admin.products.stock') }}" class="admin-nav-link {{ request()->routeIs('admin.products.stock*') ? 'active' : '' }}">
+                        <i class="bi bi-boxes"></i> Inventory & Stock
+                    </a>
+                @endif
+                @if(auth()->user()->hasPermission('categories.manage'))
+                    <a href="{{ route('admin.categories.index') }}" class="admin-nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+                        <i class="bi bi-grid-3x3-gap"></i> Categories
+                    </a>
+                @endif
+                @if(auth()->user()->hasPermission('brands.manage'))
+                    <a href="{{ route('admin.brands.index') }}" class="admin-nav-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
+                        <i class="bi bi-tag"></i> Brands
+                    </a>
+                @endif
 
                 <div class="admin-nav-heading">Marketing & Content</div>
-                <a href="{{ route('admin.coupons.index') }}" class="admin-nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
-                    <i class="bi bi-ticket-perforated"></i> Coupons
-                </a>
-                <a href="{{ route('admin.banners.index') }}" class="admin-nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
-                    <i class="bi bi-images"></i> Banners
-                </a>
-                <a href="{{ route('admin.reviews.index') }}" class="admin-nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
-                    <i class="bi bi-chat-square-quote"></i> Reviews
-                </a>
+                @if(auth()->user()->hasPermission('coupons.manage'))
+                    <a href="{{ route('admin.coupons.index') }}" class="admin-nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                        <i class="bi bi-ticket-perforated"></i> Coupons
+                    </a>
+                @endif
+                @if(auth()->user()->hasPermission('banners.manage'))
+                    <a href="{{ route('admin.banners.index') }}" class="admin-nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
+                        <i class="bi bi-images"></i> Banners
+                    </a>
+                @endif
+                @if(auth()->user()->hasPermission('reviews.manage'))
+                    <a href="{{ route('admin.reviews.index') }}" class="admin-nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-square-quote"></i> Reviews
+                    </a>
+                @endif
 
                 <div class="admin-nav-heading">Users & Reports</div>
-                <a href="{{ route('admin.customers.index') }}" class="admin-nav-link {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i> Customers
-                </a>
-                <a href="{{ route('admin.reports.sales') }}" class="admin-nav-link {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
-                    <i class="bi bi-graph-up-arrow"></i> Sales Reports
-                </a>
+                @if(auth()->user()->hasPermission('customers.view'))
+                    <a href="{{ route('admin.customers.index') }}" class="admin-nav-link {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i> Customers
+                    </a>
+                @endif
+                @if(auth()->user()->hasPermission('reports.sales'))
+                    <a href="{{ route('admin.reports.sales') }}" class="admin-nav-link {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">
+                        <i class="bi bi-graph-up-arrow"></i> Sales Reports
+                    </a>
+                @endif
 
-                <div class="admin-nav-heading">System</div>
-                <a href="{{ route('admin.settings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                    <i class="bi bi-gear"></i> Settings
+                <div class="admin-nav-heading">Account & System</div>
+                <a href="{{ route('admin.profile') }}" class="admin-nav-link {{ request()->routeIs('admin.profile*') ? 'active' : '' }}">
+                    <i class="bi bi-person-gear"></i> My Profile
                 </a>
+                @if(auth()->user()->hasPermission('settings.manage'))
+                    <a href="{{ route('admin.settings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                @endif
             </div>
 
             <div class="p-3 border-top border-secondary">
@@ -243,6 +276,11 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-3">
+                    @if(auth()->user()->isSuperAdmin())
+                        <a href="{{ route('superadmin.dashboard') }}" class="btn btn-sm btn-warning text-dark fw-bold">
+                            <i class="bi bi-shield-lock-fill me-1"></i> Super Admin Center
+                        </a>
+                    @endif
                     <a href="{{ route('home') }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-box-arrow-up-right me-1"></i> View Storefront
                     </a>
@@ -252,6 +290,10 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                             <li><span class="dropdown-item-text small text-muted">{{ auth()->user()->email }}</span></li>
+                            <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="bi bi-person-gear me-2"></i> My Profile</a></li>
+                            @if(auth()->user()->isSuperAdmin())
+                                <li><a class="dropdown-item text-warning-emphasis" href="{{ route('superadmin.dashboard') }}"><i class="bi bi-shield-shaded me-2"></i> Super Admin Center</a></li>
+                            @endif
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('admin.logout') }}">

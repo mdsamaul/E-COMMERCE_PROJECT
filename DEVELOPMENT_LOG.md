@@ -613,6 +613,52 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 
 ---
 
+## Update: Super Admin & Regular Admin URL Separation + Dynamic RBAC
+**Date**: October 11, 2026  
+**Branch**: `feature/super-admin-rbac`  
+**Status**: COMPLETE & VERIFIED (158 Tests Passed, 788 Assertions)  
+**Security Engineer**: Senior Laravel Security Engineer & Architect (Antigravity AI)
+
+### 1. Overview & Objective
+Separated administrative routing into two strictly isolated prefixes:
+- `/superadmin/*`: Dedicated control center for the root Super Administrator, handling staff lifecycle, role definitions, permission matrix, and system audit logs.
+- `/admin/*`: Operational portal for store managers, processing catalog, inventory, orders, courier logistics, customers, coupons, and sales reports.
+
+### 2. Architecture & Components Implemented
+- **Database Schema**:
+  - Migration `2026_10_11_000019_create_roles_permissions_and_super_admin_schema.php`:
+    - Added `users.is_super_admin` (`BOOLEAN`, default `false`, indexed).
+    - Created `roles`, `permissions`, `role_user`, `permission_role`, and `permission_user` tables.
+- **Models**:
+  - `App\Models\Role`: System flag, permissions/users relationships.
+  - `App\Models\Permission`: Module categorization, roles/users relationships.
+  - `App\Models\User`: Updated with `isSuperAdmin()`, `isAdmin()`, `hasRole()`, `hasPermission()`, `getAllPermissions()`, `assignRole()`, `syncRoles()`.
+- **Middleware**:
+  - `SuperAdminMiddleware` (`'superadmin'` alias): Enforces active Super Admin account, redirects guests to `/superadmin/login`, returns `403 Forbidden` for standard admins.
+  - `AdminMiddleware` (`'admin'` alias): Enforces active administrator account, redirects guests to `/admin/login`, returns `403 Forbidden` for customers.
+  - `CheckPermissionMiddleware` (`'permission'` alias): Enforces route-level granular permissions.
+- **Controllers & Routing**:
+  - `SuperAdminAuthController`: Dedicated login, logout, and intended destination logic.
+  - `SuperAdminDashboardController`: High-level metrics, active admins, roles, and audit trail.
+  - `AdminManagementController`: Full-page admin account creation, validation (unique email, BD phone, hashed passwords), status toggle, and role delegation.
+  - `RoleController` & `PermissionController`: Role definitions and system permission catalog.
+  - `ActivityLogController`: System-wide audit trail with action and IP filtering.
+  - `AdminProfileController`: Regular admin credential and contact management.
+- **Blade Views (Strict No-Modal Rule)**:
+  - `resources/views/layouts/superadmin.blade.php`: Midnight indigo dark mode layout with gold badges and distinct navigation.
+  - `resources/views/superadmin/auth/login.blade.php`: Elevated security login portal.
+  - `resources/views/superadmin/dashboard.blade.php`: Control center dashboard.
+  - `resources/views/superadmin/admins/*`: Full-page index, create, edit, and permission matrix views.
+  - `resources/views/superadmin/roles/*`: Full-page role index, create, and edit views.
+  - `resources/views/superadmin/permissions/index.blade.php`: Complete system permissions registry.
+  - `resources/views/superadmin/settings/index.blade.php`: Master system settings.
+  - `resources/views/superadmin/activity_logs/index.blade.php`: Audit trail explorer.
+  - `resources/views/admin/profile.blade.php`: Regular admin personal profile.
+- **Test Suite**:
+  - `tests/Feature/SuperAdminAndRbacSecurityTest.php`: 17 security test cases verifying full compliance.
+
+---
+
 ## Senior Engineering Audit & Verification (Post-Phase 10 Hardening)
 **Date**: October 11, 2026  
 **Status**: VERIFIED & COMPLETE  

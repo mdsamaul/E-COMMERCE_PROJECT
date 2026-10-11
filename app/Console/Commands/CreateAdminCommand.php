@@ -19,7 +19,8 @@ class CreateAdminCommand extends Command
                             {--name= : The full name of the administrator}
                             {--email= : The email address of the administrator}
                             {--phone= : The Bangladesh mobile number (e.g. 017XXXXXXXX)}
-                            {--password= : The secure password (optional, prompted securely if omitted)}';
+                            {--password= : The secure password (optional, prompted securely if omitted)}
+                            {--super : Grant root Super Administrator privileges}';
 
     /**
      * The console command description.
@@ -34,6 +35,8 @@ class CreateAdminCommand extends Command
     public function handle(): int
     {
         $this->info('=== ShopBD Admin Account Creator ===');
+
+        $isSuper = (bool) $this->option('super');
 
         // Gather Name
         $name = $this->option('name') ?: $this->ask('Administrator Full Name');
@@ -81,13 +84,23 @@ class CreateAdminCommand extends Command
             'phone' => $normalizedPhone,
             'password' => Hash::make($password),
             'role' => 'admin',
+            'is_super_admin' => $isSuper,
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
 
+        $roleSlug = $isSuper ? 'super-admin' : 'admin';
+        $role = \App\Models\Role::where('slug', $roleSlug)->first();
+        if ($role) {
+            $admin->roles()->sync([$role->id]);
+        }
+
         $this->newLine();
-        $this->info("✓ Administrator [{$admin->name}] ({$admin->email}) created successfully!");
-        $this->comment("You can now log in at: " . url('/admin/login'));
+        $type = $isSuper ? 'Super Administrator' : 'Administrator';
+        $loginUrl = $isSuper ? url('/superadmin/login') : url('/admin/login');
+
+        $this->info("✓ {$type} [{$admin->name}] ({$admin->email}) created successfully!");
+        $this->comment("You can now log in at: " . $loginUrl);
 
         return self::SUCCESS;
     }

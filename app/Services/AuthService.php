@@ -47,12 +47,30 @@ class AuthService
             ];
         }
 
-        if ($requiredRole !== null && $user->role !== $requiredRole) {
-            return [
-                'success' => false,
-                'message' => 'Unauthorized access for this account type.',
-                'user' => null,
-            ];
+        if ($requiredRole !== null) {
+            if ($requiredRole === 'superadmin' && !$user->isSuperAdmin()) {
+                return [
+                    'success' => false,
+                    'message' => 'Unauthorized: Super Administrator privileges required.',
+                    'user' => null,
+                ];
+            }
+
+            if ($requiredRole === 'admin' && !$user->isAdmin()) {
+                return [
+                    'success' => false,
+                    'message' => 'Unauthorized access for this account type.',
+                    'user' => null,
+                ];
+            }
+
+            if ($requiredRole === 'customer' && !$user->isCustomer()) {
+                return [
+                    'success' => false,
+                    'message' => 'Unauthorized access for this account type.',
+                    'user' => null,
+                ];
+            }
         }
 
         if (!Hash::check($password, $user->password)) {

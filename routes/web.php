@@ -26,6 +26,14 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductCatalogController;
+use App\Http\Controllers\Admin\AdminProfileController;
+use App\Http\Controllers\SuperAdmin\ActivityLogController as SuperAdminActivityLogController;
+use App\Http\Controllers\SuperAdmin\AdminManagementController as SuperAdminAdminController;
+use App\Http\Controllers\SuperAdmin\PermissionController as SuperAdminPermissionController;
+use App\Http\Controllers\SuperAdmin\RoleController as SuperAdminRoleController;
+use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingController;
+use App\Http\Controllers\SuperAdmin\SuperAdminAuthController;
+use App\Http\Controllers\SuperAdmin\SuperAdminDashboardController;
 use Illuminate\Support\Facades\Route;
 
 /* -----------------------------------------------------------------------------
@@ -126,7 +134,47 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 /* -----------------------------------------------------------------------------
- | Admin Routes (/admin)
+ | Super Admin Routes (/superadmin)
+ | ----------------------------------------------------------------------------- */
+Route::prefix('superadmin')->name('superadmin.')->group(function () {
+    // Super Admin Guest Routes
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [SuperAdminAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [SuperAdminAuthController::class, 'login'])->name('login.submit');
+    });
+
+    // Super Admin Protected Routes
+    Route::middleware('superadmin')->group(function () {
+        Route::post('/logout', [SuperAdminAuthController::class, 'logout'])->name('logout');
+        Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Admin Account Lifecycle Management
+        Route::get('/admins', [SuperAdminAdminController::class, 'index'])->name('admins.index');
+        Route::get('/admins/create', [SuperAdminAdminController::class, 'create'])->name('admins.create');
+        Route::post('/admins', [SuperAdminAdminController::class, 'store'])->name('admins.store');
+        Route::get('/admins/{id}/edit', [SuperAdminAdminController::class, 'edit'])->whereNumber('id')->name('admins.edit');
+        Route::put('/admins/{id}', [SuperAdminAdminController::class, 'update'])->whereNumber('id')->name('admins.update');
+        Route::patch('/admins/{id}/status', [SuperAdminAdminController::class, 'toggleStatus'])->whereNumber('id')->name('admins.status');
+        Route::get('/admins/{id}/permissions', [SuperAdminAdminController::class, 'permissions'])->whereNumber('id')->name('admins.permissions');
+        Route::put('/admins/{id}/permissions', [SuperAdminAdminController::class, 'updatePermissions'])->whereNumber('id')->name('admins.permissions.update');
+
+        // Role Management
+        Route::resource('roles', SuperAdminRoleController::class)->except(['show']);
+
+        // Permission Catalog
+        Route::get('/permissions', [SuperAdminPermissionController::class, 'index'])->name('permissions.index');
+
+        // Platform & System Settings
+        Route::get('/settings', [SuperAdminSettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SuperAdminSettingController::class, 'update'])->name('settings.update');
+
+        // Security Audit & Activity Logs
+        Route::get('/activity-logs', [SuperAdminActivityLogController::class, 'index'])->name('activity-logs.index');
+    });
+});
+
+/* -----------------------------------------------------------------------------
+ | Regular Admin Routes (/admin)
  | ----------------------------------------------------------------------------- */
 Route::prefix('admin')->name('admin.')->group(function () {
     // Admin Guest Routes
@@ -139,6 +187,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Admin Profile Management
+        Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
+        Route::put('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
         // Orders Management
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
