@@ -17,8 +17,19 @@ class CouponUsage extends Model
         'order_id',
         'user_id',
         'discount_applied',
+        'discount_amount',
         'created_at',
     ];
+
+    public function getDiscountAmountAttribute()
+    {
+        return $this->discount_applied;
+    }
+
+    public function setDiscountAmountAttribute($value): void
+    {
+        $this->attributes['discount_applied'] = $value;
+    }
 
     protected function casts(): array
     {

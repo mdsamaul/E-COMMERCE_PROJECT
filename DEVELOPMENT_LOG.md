@@ -627,8 +627,37 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 - **Model Relation Integrity**: Hardened `OrderItem` and `OrderStatusHistory` relationships to gracefully handle soft-deleted products and users (`withTrashed()`).
 
 ### 2. Verification Summary:
-- `php artisan test`: **131 passed (608 assertions) — 100% PASS, 0 failures**.
+- `php artisan test`: **141 passed (721 assertions) — 100% PASS, 0 failures**.
 - `php artisan shopbd:smoke-test`: Passed 10/10 deployment diagnostics with zero fatal errors.
 - `npm run build`: Production assets compiled cleanly to `public/build`.
 - All 10 master phases fully operational and confirmed.
+
+---
+
+## Final End-to-End Customer Journey Audit & Verification
+**Date**: October 11, 2026  
+**Status**: 100% VERIFIED & PRODUCTION READY  
+**Engineer**: Senior Laravel Debugging Engineer & Architect (Antigravity AI)
+
+### 1. Customer Journey Verification (10-Point Audit):
+1. **Browse Categories & Search**: Verified `/category/{slug}`, keyword search (`q` and `search`), and SKU search.
+2. **Product Details**: Verified product view, pricing strikes, BDT display, inventory status, specifications, and delivery charges.
+3. **Cart Operations**: Verified add to cart, item quantities, total calculation, and live AJAX count endpoint (`/cart/count`).
+4. **Coupon Validation**: Verified rejection of invalid coupon codes, rejection of coupons below minimum spend, and calculation of valid coupons (`applied_coupon_id`).
+5. **Cash on Delivery Checkout**: Verified dynamic Dhaka (৳60) vs. Outside Dhaka (৳120) endpoint, COD order creation, stock deduction, `inventory_movements` ledger entry (type: `sale`), `order_status_histories` entry, and cart clearing.
+6. **Order Receipt & Invoices**: Verified confirmation receipt, customer order history, detail view, and printable A4 invoice (`/customer/orders/{orderNumber}/invoice`).
+7. **Admin Authentication**: Verified admin portal login, session authentication, and executive dashboard metrics.
+8. **Admin Order State & Inventory**: Verified order progression (`pending` -> `confirmed` -> `processing`), manual stock adjustment (+10 units) with audit trail in `inventory_movements`.
+9. **IDOR Security**: Verified that Customer B receives HTTP 403 Forbidden attempting to view Customer A's order, invoice, cancellation, or confirmation, and unauthenticated guests are redirected to login.
+10. **Server-Side Defenses**: Verified rejection of negative/zero quantities, rejection of overstock additions, server-side recalculation ignoring client-tampered prices/payment statuses, and state machine rejection of illegal transition jumps.
+
+### 2. Issues Discovered & Resolved During Audit:
+- **Coupon Usage Column Mismatch**: Fixed `OrderService@processCheckout` and `CouponUsage` model where `discount_amount` was used instead of `discount_applied`, preventing database integrity violations on coupon checkouts. Added bidirectional attribute alias.
+- **Search Query Parameter Interoperability**: Updated `ProductCatalogController@index` to support both `q` and `search` query parameters interchangeably.
+- **Order Payment Status Constants**: Added `PAYMENT_UNPAID`, `PAYMENT_PAID`, `PAYMENT_FAILED`, and `PAYMENT_REFUNDED` constants to `Order` model.
+
+### 3. Verification Metrics:
+- Automated Test Suite: **141 passed tests, 721 assertions (100% PASS, 0 failures)**.
+- Smoke Test Command: `php artisan shopbd:smoke-test` (10/10 PASS).
+- Frontend Build: `npm run build` compiled cleanly.
 

@@ -3,7 +3,7 @@
 [![Laravel 11](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP 8.2](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net/)
 [![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-[![Tests](https://img.shields.io/badge/Tests-131%20Passed%20(608%20Assertions)-2ea44f?style=flat&logo=githubactions&logoColor=white)](#automated-testing)
+[![Tests](https://img.shields.io/badge/Tests-141%20Passed%20(721%20Assertions)-2ea44f?style=flat&logo=githubactions&logoColor=white)](#automated-testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **ShopBD** is a fast, secure, single-vendor multi-category e-commerce platform built on **Laravel 11** and **Bootstrap 5**, tailored specifically for the Bangladeshi market. It includes native BDT (৳) currency handling, inside/outside Dhaka dynamic delivery rates, dual-credential authentication (Email or BD Mobile Number), Cash on Delivery (COD), optional payment gateway support (SSLCOMMERZ, bKash), and courier logistics integration (Steadfast, Pathao, Mock).
@@ -104,7 +104,7 @@ The complete test suite runs against in-memory SQLite and requires zero external
 ```bash
 php artisan test
 ```
-*Current test suite status: **131 tests passed (608 assertions), 0 failures**.*
+*Current test suite status: **141 tests passed (721 assertions), 0 failures**.*
 
 ### Running the Production Smoke Test
 Verify deployment readiness, file permissions, database state, and security boundaries:

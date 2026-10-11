@@ -17,8 +17,8 @@ class ProductCatalogController extends Controller
             ->with(['primaryImage', 'category', 'brand']);
 
         // 1. Search filter
-        if ($request->filled('q')) {
-            $keyword = trim($request->input('q'));
+        if ($request->filled('q') || $request->filled('search')) {
+            $keyword = trim($request->input('q') ?? $request->input('search'));
             $query->where(function ($q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
                   ->orWhere('sku', 'like', "%{$keyword}%")

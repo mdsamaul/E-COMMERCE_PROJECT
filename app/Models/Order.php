@@ -102,6 +102,11 @@ class Order extends Model
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_RETURNED = 'returned';
 
+    public const PAYMENT_UNPAID = 'unpaid';
+    public const PAYMENT_PAID = 'paid';
+    public const PAYMENT_FAILED = 'failed';
+    public const PAYMENT_REFUNDED = 'refunded';
+
     /**
      * Allowed state transitions map
      *

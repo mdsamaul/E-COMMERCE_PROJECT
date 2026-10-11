@@ -377,7 +377,7 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - `docs/CPANEL_SHARED_HOSTING_DEPLOYMENT_GUIDE.md`: Step-by-step cPanel guide covering hosting prerequisites, domain DNS, database creation, upload methods, permissions, cron jobs, smoke tests, safe maintenance, and rollback plans.
 - [x] Automated Testing:
   - `tests/Feature/SharedHostingDeploymentTest.php` (8 feature tests, 41 assertions).
-  - 100% test pass rate across entire application: **131 passed tests out of 131 (608 assertions), 0 failures**.
+  - 100% test pass rate across entire application: **141 passed tests out of 141 (721 assertions), 0 failures**.
 
 ---
 

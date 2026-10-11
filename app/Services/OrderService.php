@@ -232,7 +232,7 @@ class OrderService
                     'coupon_id' => $coupon->id,
                     'user_id' => $orderUser ? $orderUser->id : null,
                     'order_id' => $order->id,
-                    'discount_amount' => $discountAmount,
+                    'discount_applied' => $discountAmount,
                 ]);
             }
 
