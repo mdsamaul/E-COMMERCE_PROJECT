@@ -19,6 +19,9 @@ class OrderItem extends Model
         'unit_price',
         'quantity',
         'subtotal',
+        'name',
+        'sku',
+        'price',
     ];
 
     protected function casts(): array
@@ -49,5 +52,25 @@ class OrderItem extends Model
     public function setSkuAttribute(?string $value): void
     {
         $this->attributes['product_sku'] = $value;
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->attributes['product_name'] ?? '';
+    }
+
+    public function setNameAttribute(?string $value): void
+    {
+        $this->attributes['product_name'] = $value;
+    }
+
+    public function getPriceAttribute(): float
+    {
+        return (float) ($this->attributes['unit_price'] ?? 0.0);
+    }
+
+    public function setPriceAttribute($value): void
+    {
+        $this->attributes['unit_price'] = $value;
     }
 }

@@ -17,6 +17,7 @@ class Coupon extends Model
         'type',
         'value',
         'min_order_amount',
+        'min_spend',
         'max_discount_amount',
         'usage_limit_per_coupon',
         'usage_limit_per_user',
@@ -102,5 +103,15 @@ class Coupon extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function getMinSpendAttribute(): float
+    {
+        return (float) ($this->attributes['min_order_amount'] ?? 0.0);
+    }
+
+    public function setMinSpendAttribute($value): void
+    {
+        $this->attributes['min_order_amount'] = $value;
     }
 }
