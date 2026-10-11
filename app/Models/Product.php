@@ -135,6 +135,20 @@ class Product extends Model
         );
     }
 
+    protected function averageRating(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => round((float) ($this->approvedReviews()->avg('rating') ?? 0), 1)
+        );
+    }
+
+    protected function reviewsCount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->approvedReviews()->count()
+        );
+    }
+
     /* -------------------------------------------------------------------------
      | Scopes
      | ------------------------------------------------------------------------- */
