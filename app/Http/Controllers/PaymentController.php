@@ -19,7 +19,8 @@ class PaymentController extends Controller
      */
     public function callback(Request $request, string $gateway): RedirectResponse
     {
-        Log::info("[Payment][Callback] Received redirect callback from gateway: {$gateway}", $request->all());
+        $sanitized = $request->except(['card_no', 'card_number', 'cvv', 'cvv2', 'password', 'pin', 'token', 'secret', 'app_secret', 'store_passwd']);
+        Log::info("[Payment][Callback] Received redirect callback from gateway: {$gateway}", $sanitized);
 
         $result = $this->paymentManager->processCallback($gateway, $request);
 
@@ -48,7 +49,8 @@ class PaymentController extends Controller
      */
     public function ipn(Request $request, string $gateway): JsonResponse
     {
-        Log::info("[Payment][IPN] Received server-to-server notification from gateway: {$gateway}", $request->all());
+        $sanitized = $request->except(['card_no', 'card_number', 'cvv', 'cvv2', 'password', 'pin', 'token', 'secret', 'app_secret', 'store_passwd']);
+        Log::info("[Payment][IPN] Received server-to-server notification from gateway: {$gateway}", $sanitized);
 
         $result = $this->paymentManager->processCallback($gateway, $request);
 

@@ -3,6 +3,48 @@
 @section('title', $product->name . ' — Buy Online in Bangladesh | ShopBD')
 @section('meta_description', Str::limit(strip_tags($product->short_description ?? $product->description), 160))
 @section('meta_image', $product->primaryImage?->url ?? asset('images/default.jpg'))
+@section('og_type', 'product')
+
+@push('structured_data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ addslashes($product->name) }}",
+  "image": [
+    "{{ $product->primaryImage?->url ?? asset('images/default.jpg') }}"
+  ],
+  "description": "{{ addslashes(Str::limit(strip_tags($product->short_description ?? $product->description), 250)) }}",
+  "sku": "{{ $product->sku }}",
+  @if($product->brand)
+  "brand": {
+    "@type": "Brand",
+    "name": "{{ addslashes($product->brand->name) }}"
+  },
+  @endif
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ url()->current() }}",
+    "priceCurrency": "BDT",
+    "price": "{{ number_format((float)$product->effective_price, 2, '.', '') }}",
+    "availability": "{{ $product->stock_quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+    "itemCondition": "https://schema.org/NewCondition",
+    "seller": {
+      "@type": "Organization",
+      "name": "ShopBD"
+    }
+  }
+  @if($product->approvedReviews->count() > 0)
+  ,
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ number_format((float)$product->approvedReviews->avg('rating'), 1, '.', '') }}",
+    "reviewCount": "{{ $product->approvedReviews->count() }}"
+  }
+  @endif
+}
+</script>
+@endpush
 
 @section('content')
 <div class="container py-4">

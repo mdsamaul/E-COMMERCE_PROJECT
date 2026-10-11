@@ -57,7 +57,7 @@ Route::prefix('cart')->name('cart.')->group(function () {
 Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::get('/', [CheckoutController::class, 'index'])->name('index');
     Route::post('/calculate', [CheckoutController::class, 'calculate'])->name('calculate');
-    Route::post('/', [CheckoutController::class, 'store'])->name('store');
+    Route::post('/', [CheckoutController::class, 'store'])->name('store')->middleware('throttle:10,1');
 });
 Route::get('/order/confirmation/{order_number}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 
@@ -65,10 +65,14 @@ Route::get('/order/confirmation/{order_number}', [CheckoutController::class, 'co
 Route::match(['get', 'post'], '/payment/callback/{gateway}', [PaymentController::class, 'callback'])->name('payment.callback');
 Route::post('/payment/ipn/{gateway}', [PaymentController::class, 'ipn'])->name('payment.ipn');
 
+// SEO: Dynamic XML Sitemap & Robots.txt
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots'])->name('seo.robots');
+
 // Informative Pages
 Route::get('/about-us', [PageController::class, 'about'])->name('pages.about');
 Route::get('/contact', [PageController::class, 'contact'])->name('pages.contact');
-Route::post('/contact', [PageController::class, 'submitContact'])->name('pages.contact.submit');
+Route::post('/contact', [PageController::class, 'submitContact'])->name('pages.contact.submit')->middleware('throttle:5,1');
 Route::get('/faq', [PageController::class, 'faq'])->name('pages.faq');
 Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('pages.privacy');
 Route::get('/terms-and-conditions', [PageController::class, 'terms'])->name('pages.terms');
