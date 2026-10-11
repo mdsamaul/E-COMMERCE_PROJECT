@@ -71,10 +71,20 @@
             </div>
         </div>
 
-        <div class="mt-3">
-            <a href="{{ route('products.show', $product->slug) }}" class="btn btn-sm btn-outline-shop w-100">
-                <i class="bi bi-eye me-1"></i> View Details
+        <div class="mt-3 d-flex gap-2">
+            <a href="{{ route('products.show', $product->slug) }}" class="btn btn-sm btn-outline-secondary flex-grow-1">
+                <i class="bi bi-eye me-1"></i> Details
             </a>
+            @if($product->in_stock)
+                <form method="POST" action="{{ route('cart.add') }}" class="flex-grow-1">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn-sm btn-shop-primary w-100" title="Add to Cart">
+                        <i class="bi bi-cart-plus me-1"></i> Add
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 </div>

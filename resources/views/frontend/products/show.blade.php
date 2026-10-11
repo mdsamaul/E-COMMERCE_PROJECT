@@ -117,28 +117,32 @@
 
             <!-- Purchase Controls (Qty + Buttons) -->
             @if($product->in_stock)
-                <div class="row g-3 align-items-center mb-4">
-                    <div class="col-auto">
-                        <label class="form-label small fw-bold d-block mb-1">Quantity</label>
-                        <div class="input-group" style="width: 130px;">
-                            <button class="btn btn-outline-secondary" type="button" onclick="decrementQty()"><i class="bi bi-dash"></i></button>
-                            <input type="number" id="purchaseQuantity" class="form-control text-center" value="1" min="1" max="{{ $product->stock_quantity }}">
-                            <button class="btn btn-outline-secondary" type="button" onclick="incrementQty()"><i class="bi bi-plus"></i></button>
+                <form method="POST" action="{{ route('cart.add') }}" class="mb-4">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <label class="form-label small fw-bold d-block mb-1">Quantity</label>
+                            <div class="input-group" style="width: 130px;">
+                                <button class="btn btn-outline-secondary" type="button" onclick="decrementQty()"><i class="bi bi-dash"></i></button>
+                                <input type="number" name="quantity" id="purchaseQuantity" class="form-control text-center" value="1" min="1" max="{{ $product->stock_quantity }}">
+                                <button class="btn btn-outline-secondary" type="button" onclick="incrementQty()"><i class="bi bi-plus"></i></button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col">
-                        <label class="form-label small fw-bold d-block mb-1">&nbsp;</label>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-shop-primary flex-grow-1 py-2 fw-bold" onclick="alert('Product added to cart! Complete checkout via cart in Phase 6.')">
-                                <i class="bi bi-cart-plus me-1"></i> Add to Cart
-                            </button>
-                            <button class="btn btn-warning flex-grow-1 py-2 fw-bold text-dark" onclick="alert('Proceeding directly to instant checkout! (Phase 7)')">
-                                <i class="bi bi-bag-check me-1"></i> Buy Now
-                            </button>
+                        <div class="col">
+                            <label class="form-label small fw-bold d-block mb-1">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-shop-primary flex-grow-1 py-2 fw-bold">
+                                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                                </button>
+                                <button type="submit" name="buy_now" value="1" class="btn btn-warning flex-grow-1 py-2 fw-bold text-dark">
+                                    <i class="bi bi-bag-check me-1"></i> Buy Now
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
             @endif
 
             <!-- Delivery & Return Trust Box -->
