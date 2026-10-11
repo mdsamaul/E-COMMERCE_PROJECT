@@ -40,4 +40,14 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function getSkuAttribute(): string
+    {
+        return $this->attributes['product_sku'] ?? '';
+    }
+
+    public function setSkuAttribute(?string $value): void
+    {
+        $this->attributes['product_sku'] = $value;
+    }
 }

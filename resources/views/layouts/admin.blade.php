@@ -172,6 +172,9 @@
                 <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
+                <a href="{{ route('admin.orders.index') }}" class="admin-nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                    <i class="bi bi-bag-check"></i> Orders & Sales
+                </a>
 
                 <div class="admin-nav-heading">Catalog & Stock</div>
                 <a href="{{ route('admin.products.index') }}" class="admin-nav-link {{ request()->routeIs('admin.products.*') && !request()->routeIs('admin.products.stock*') ? 'active' : '' }}">

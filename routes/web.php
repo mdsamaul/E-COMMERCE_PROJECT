@@ -15,6 +15,10 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\WishlistController as CustomerWishlistController;
+use App\Http\Controllers\Customer\ReviewController as CustomerReviewController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -92,6 +96,21 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
     Route::post('/addresses', [ProfileController::class, 'storeAddress'])->name('address.store');
     Route::delete('/addresses/{address}', [ProfileController::class, 'deleteAddress'])->name('address.delete');
+
+    // Customer Orders & Invoices
+    Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{orderNumber}', [CustomerOrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{orderNumber}/invoice', [CustomerOrderController::class, 'invoice'])->name('orders.invoice');
+    Route::post('/orders/{orderNumber}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
+
+    // Customer Wishlist
+    Route::get('/wishlist', [CustomerWishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist', [CustomerWishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/{productId}', [CustomerWishlistController::class, 'destroy'])->whereNumber('productId')->name('wishlist.destroy');
+    Route::post('/wishlist/{productId}/move-to-cart', [CustomerWishlistController::class, 'moveToCart'])->whereNumber('productId')->name('wishlist.move-to-cart');
+
+    // Customer Reviews
+    Route::post('/reviews', [CustomerReviewController::class, 'store'])->name('reviews.store');
 });
 
 // Logout for authenticated users
@@ -111,6 +130,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Orders Management
+        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::post('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('orders/{order}/payment', [AdminOrderController::class, 'updatePayment'])->name('orders.update-payment');
+        Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
 
         // Categories CRUD
         Route::resource('categories', CategoryController::class)->except(['show']);
