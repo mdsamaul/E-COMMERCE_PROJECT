@@ -2,6 +2,15 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\SalesReportController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -61,5 +70,43 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Categories CRUD
+        Route::resource('categories', CategoryController::class)->except(['show']);
+
+        // Brands CRUD
+        Route::resource('brands', BrandController::class)->except(['show']);
+
+        // Products & Stock Management
+        Route::get('products/stock/overview', [ProductController::class, 'stockIndex'])->name('products.stock');
+        Route::post('products/{product}/stock/adjust', [ProductController::class, 'adjustStock'])->name('products.stock.adjust');
+        Route::delete('products/{product}/images/{image}', [ProductController::class, 'deleteImage'])->name('products.images.delete');
+        Route::post('products/{product}/images/{image}/primary', [ProductController::class, 'setPrimaryImage'])->name('products.images.primary');
+        Route::resource('products', ProductController::class);
+
+        // Coupons CRUD
+        Route::resource('coupons', CouponController::class)->except(['show']);
+
+        // Banners CRUD
+        Route::resource('banners', BannerController::class)->except(['show']);
+
+        // Customers Directory
+        Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+        Route::post('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
+
+        // Review Moderation
+        Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::post('reviews/{review}/approve', [ReviewController::class, 'approve'])->name('reviews.approve');
+        Route::post('reviews/{review}/reject', [ReviewController::class, 'reject'])->name('reviews.reject');
+        Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+
+        // Website & Delivery Settings
+        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+
+        // Sales Reports
+        Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales');
     });
 });
+

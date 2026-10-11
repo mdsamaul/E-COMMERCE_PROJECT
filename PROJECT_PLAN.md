@@ -120,7 +120,62 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 - [x] Safe initial admin creation artisan command (`shopbd:create-admin`) with interactive hidden prompts.
 - [x] Automated test suite verifying customer auth, admin auth, guest access, authorization, validation, and rate limiting (`CustomerAuthTest.php`, `AdminAuthTest.php`).
 
-### Phase 4: Customer Frontend Layout & Homepage
+### Phase 4: Complete Admin Dashboard (Completed)
+- [x] Modern, professional Bootstrap 5 Admin layout with responsive sidebar navigation, sticky header, admin profile dropdown, and flash alerts (`resources/views/layouts/admin.blade.php`).
+- [x] Strict No-Modal Rule enforced: All Create and Edit forms are dedicated, full-screen, responsive views.
+- [x] Executive Dashboard Overview (`AdminDashboardController`):
+  - Total sales in ৳ (from paid orders), Total orders, Pending orders, Total products, Total customers, Low stock count.
+  - Recent orders overview and quick administrative shortcut cards.
+- [x] Category CRUD (`CategoryController`):
+  - Index with hierarchy, product count, featured/active badges, pagination.
+  - Dedicated full-screen Create & Edit views (`create.blade.php`, `edit.blade.php`).
+  - Slug generator, parent category selector, image upload, deletion safeguard against assigned products.
+- [x] Brand CRUD (`BrandController`):
+  - Index, dedicated full-screen Create & Edit views, logo upload, safe file replacement, deletion safeguard.
+- [x] Product CRUD & Image Management (`ProductController`):
+  - Index with search (name/SKU), category, brand, and stock level filters.
+  - Dedicated full-screen Create & Edit views with comprehensive pricing (regular, sale, purchase), SKU uniqueness, multiple image uploads, and initial stock logging.
+  - Image gallery manager: set primary image, delete non-primary images.
+  - Product details view (`show.blade.php`) with inventory movement history audit trail.
+  - Soft delete support.
+- [x] Stock & Inventory Management (`ProductController@stockIndex`, `adjustStock`):
+  - Dedicated full-screen stock overview (`stock.blade.php`) with low stock and out-of-stock quick filters.
+  - Stock adjustment operations (+, -, set) with mandatory remarks.
+  - Comprehensive `inventory_movements` table logging with audit trail (`created_by_user_id`).
+- [x] Coupon Management (`CouponController`):
+  - Index, dedicated full-screen Create & Edit views.
+  - Uppercase code normalization, fixed & percentage discounts, min order amount, max discount cap, validity date ranges, usage limit per coupon and per user.
+- [x] Banner Management (`BannerController`):
+  - Index, dedicated full-screen Create & Edit views.
+  - Hero slider and promotional promo card placements, image upload and safe storage cleanup.
+- [x] Customer Directory (`CustomerController`):
+  - Index with search (name, email, mobile) and account status filter.
+  - Dedicated full-screen Customer profile (`show.blade.php`) displaying order history, lifetime spending, and delivery addresses without exposing private passwords or secrets.
+  - Account status toggle (Active / Suspended).
+- [x] Review Moderation (`ReviewController`):
+  - Index with approval status and star rating filters.
+  - Approve, unapprove, and delete customer product reviews.
+- [x] Website & Delivery Settings (`SettingController`):
+  - Dedicated full-screen settings dashboard (`settings/index.blade.php`).
+  - Store identity (name, tagline, phone with Bangladesh phone validation, support email, office address).
+  - Shipping fees (Inside Dhaka delivery charge, Outside Dhaka delivery charge, Free shipping threshold).
+  - Currency symbol configuration (৳).
+- [x] Date-Filtered Sales Reports (`SalesReportController`):
+  - Filterable by start date, end date, order status, and payment status.
+  - Period gross sales (BDT), total orders, delivered orders, average order value, total discount.
+  - Payment method breakdown and top 5 selling products in period.
+  - Paginated orders breakdown.
+- [x] Security & Authorization:
+  - Form Requests (`CategoryRequest`, `BrandRequest`, `ProductRequest`, `CouponRequest`, `BannerRequest`, `UpdateSettingsRequest`).
+  - Server-side `AdminMiddleware` protects all admin routes with 403 Forbidden for non-admins.
+  - Database transactions on multi-record database operations.
+  - Safe file replacement and deletion on storage disks.
+- [x] Automated Testing:
+  - `AdminCatalogCrudTest.php` (13 tests)
+  - `AdminManagementTest.php` (12 tests)
+  - Full test suite passing (52 tests, 217 assertions).
+
+### Phase 5: Customer Frontend Layout & Homepage
 - [ ] Master customer layout with top announcement bar (currency BDT, helpline), responsive navbar, search input, category dropdown, cart counter badge, and footer.
 - [ ] Dynamic homepage with:
   - Hero slider / banners
@@ -130,7 +185,7 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - Value propositions (Fast delivery, COD available, Easy return)
 - [ ] Static pages: About Us, Contact, FAQ, Terms, Privacy Policy, Return Policy.
 
-### Phase 5: Product Catalog, Filters & Search
+### Phase 6: Product Catalog, Filters & Search
 - [ ] Category and Brand browse pages.
 - [ ] Product listing with sorting (price low-high, high-low, newest), price range filter, and category filter.
 - [ ] Live/server-side search with sanitized keywords.
@@ -144,14 +199,14 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - Related products carousel/grid
   - Customer reviews list and submission form
 
-### Phase 6: Shopping Cart & Wishlist System
+### Phase 7: Shopping Cart & Wishlist System
 - [ ] Dual-state cart: Guest session-based cart + authenticated persistent cart.
 - [ ] Automatic cart merger upon customer login.
 - [ ] Add, update quantity, remove, and clear cart actions with real-time feedback.
 - [ ] Stock validation during cart manipulation.
 - [ ] Customer wishlist management.
 
-### Phase 7: Checkout & Cash on Delivery (COD) Engine
+### Phase 8: Checkout & Cash on Delivery (COD) Engine
 - [ ] Single-page / multi-step responsive checkout.
 - [ ] Bangladesh address form: Name, Phone, Alternative Phone, Division, District, Full Address, Delivery notes.
 - [ ] Dynamic shipping calculation: Inside Dhaka (৳60) vs Outside Dhaka (৳120).
@@ -159,33 +214,17 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 - [ ] Atomic order creation with `DB::transaction` and `lockForUpdate` stock deduction.
 - [ ] Order confirmation page with printable summary and tracking code.
 
-### Phase 8: Customer Account & Order History
+### Phase 9: Customer Account & Order History
 - [ ] Customer dashboard.
 - [ ] Order history with order status badges (Pending, Confirmed, Shipped, Delivered, Cancelled).
 - [ ] Detailed order receipt view.
 - [ ] Customer address book management.
 - [ ] Review submission for purchased items.
 
-### Phase 9: Admin Dashboard & Management System
-- [ ] Modern, responsive Admin layout with sidebar navigation, header notifications, and admin profile.
-- [ ] Executive dashboard overview:
-  - Total sales in ৳, Today's orders, Total customers, Low stock alerts
-  - Recent orders table
-  - Monthly sales chart
-- [ ] Category & Brand CRUD with image upload and SEO slug generation.
-- [ ] Product Management:
-  - Full CRUD with multiple image uploads, primary image selector, SKU generator
-  - Pricing (regular, sale, purchase), stock levels, description, category, brand
-- [ ] Inventory adjustment logs & low stock tracker.
-
-### Phase 10: Admin Order & Operations Management
+### Phase 10: Admin Order Fulfillment & Printable Invoice
 - [ ] Order management list with filters (status, date, search by customer phone or order ID).
 - [ ] Order details view with printable invoice.
 - [ ] Order status updater with remarks recorded in `order_status_histories`.
-- [ ] Coupon manager (create discount codes, percentages, limits, expiry).
-- [ ] Banner management (homepage carousel slides and promotional promos).
-- [ ] Review moderation (approve/reject).
-- [ ] Store settings manager (delivery charges, contact info, store status).
 
 ### Phase 11: SEO, Polish, QA Testing & Shared Hosting Deployment Package
 - [ ] Dynamic meta tags, OpenGraph tags, sitemap.xml generator, robots.txt.
