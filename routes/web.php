@@ -16,14 +16,29 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProductCatalogController;
 use Illuminate\Support\Facades\Route;
 
 /* -----------------------------------------------------------------------------
- | Public Routes
+ | Public Storefront Routes
  | ----------------------------------------------------------------------------- */
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/products', [ProductCatalogController::class, 'index'])->name('products.index');
+Route::get('/product/{slug}', [ProductCatalogController::class, 'show'])->name('products.show');
+Route::get('/category/{slug}', [ProductCatalogController::class, 'category'])->name('products.category');
+Route::get('/brand/{slug}', [ProductCatalogController::class, 'brand'])->name('products.brand');
+
+// Informative Pages
+Route::get('/about-us', [PageController::class, 'about'])->name('pages.about');
+Route::get('/contact', [PageController::class, 'contact'])->name('pages.contact');
+Route::post('/contact', [PageController::class, 'submitContact'])->name('pages.contact.submit');
+Route::get('/faq', [PageController::class, 'faq'])->name('pages.faq');
+Route::get('/privacy-policy', [PageController::class, 'privacy'])->name('pages.privacy');
+Route::get('/terms-and-conditions', [PageController::class, 'terms'])->name('pages.terms');
+Route::get('/shipping-policy', [PageController::class, 'shippingPolicy'])->name('pages.shipping');
+Route::get('/return-policy', [PageController::class, 'returnPolicy'])->name('pages.return');
 
 /* -----------------------------------------------------------------------------
  | Customer Guest Authentication Routes
