@@ -111,11 +111,14 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 - [x] Database seeders with realistic demo data tailored for Bangladesh (Districts, categories, brands, sample products with BDT prices, admin user).
 - [x] Automated test suite verifying models, relationships, and constraints (`DatabaseArchitectureTest.php`).
 
-### Phase 3: Authentication, Authorization & Security Baseline
-- [ ] Customer authentication (Registration, Login, Password Reset, Profile).
-- [ ] Admin authentication with secure route prefix (`/admin`) and dedicated admin role middleware.
-- [ ] Bangladesh phone number validation rule (`01[3-9]\d{8}`).
-- [ ] Security hardening: Rate-limiting, CSRF, mass-assignment guards, security headers.
+### Phase 3: Authentication, Authorization & Security Baseline (COMPLETED)
+- [x] Customer authentication (Registration, Dual Login via Email/Mobile, Password Reset, Profile).
+- [x] Admin authentication with secure route prefix (`/admin`) and dedicated server-side `AdminMiddleware`.
+- [x] Bangladesh phone number validation rule and normalizer (`BangladeshPhone`).
+- [x] Security hardening: Rate-limiting (`LoginRequest`), CSRF protection, session regeneration on login/logout.
+- [x] Guest purchase auto-account provisioning service (`AuthService::findOrCreateFromPurchase`).
+- [x] Safe initial admin creation artisan command (`shopbd:create-admin`) with interactive hidden prompts.
+- [x] Automated test suite verifying customer auth, admin auth, guest access, authorization, validation, and rate limiting (`CustomerAuthTest.php`, `AdminAuthTest.php`).
 
 ### Phase 4: Customer Frontend Layout & Homepage
 - [ ] Master customer layout with top announcement bar (currency BDT, helpline), responsive navbar, search input, category dropdown, cart counter badge, and footer.
@@ -204,8 +207,8 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 | Database Migrations (21 Tables) | Database | Phase 2 | **Completed** |
 | Eloquent Models & Relations | Database | Phase 2 | **Completed** |
 | Seeders (BD Districts, Demo Catalog) | Database | Phase 2 | **Completed** |
-| Customer Auth (Login/Register) | Security | Phase 3 | Pending |
-| Admin Auth & Role Middleware | Security | Phase 3 | Pending |
+| Customer Auth (Login/Register) | Security | Phase 3 | **Completed** |
+| Admin Auth & Role Middleware | Security | Phase 3 | **Completed** |
 | Responsive Navbar & Footer | Customer UI | Phase 4 | Pending |
 | Homepage Hero & Product Grids | Customer UI | Phase 4 | Pending |
 | Product Catalog & Filtering | Customer UI | Phase 5 | Pending |

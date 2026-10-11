@@ -118,3 +118,37 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 
 ---
 
+## [Phase 3] Authentication, Authorization & Security Baseline
+**Date**: October 11, 2026  
+**Status**: COMPLETED  
+**Engineer**: Senior Laravel Developer & Security Architect (Antigravity AI)  
+
+### 1. Authentication Architecture & Security Implementation
+- **Custom Validation Rule (`BangladeshPhone`)**: Validates Bangladeshi mobile numbers (`01[3-9]\d{8}`) and normalizes all formats (`+8801...`, `8801...`, `01...`) to standardized 11-digit format.
+- **Dual Credential Login**: Customer and Admin login forms accept either **Email Address** OR **Bangladeshi Mobile Number** + Password.
+- **Auto-Account Provisioning on Product Purchase**: `AuthService::findOrCreateFromPurchase` provisions a customer account automatically when a guest orders using their mobile number, enabling subsequent login.
+- **Server-Side Authorization Middleware**:
+  - `AdminMiddleware`: Strictly validates `auth()` and `role === 'admin'`. Guests are redirected to `/admin/login`, and non-admins receive `403 Forbidden`.
+  - `CustomerMiddleware`: Protects customer portal routes (`/customer/profile`, addresses).
+- **Rate Limiting & Security Hardening**:
+  - `LoginRequest`: Uses `RateLimiter` throttle key (`login|ip`), blocking brute-force attempts after 5 consecutive failures.
+  - Session fixation protection: `session()->regenerate()` on login and `invalidate() + regenerateToken()` on logout.
+- **Safe Admin Creation CLI (`shopbd:create-admin`)**:
+  - Console command with secret masking prompts for name, email, phone, and password.
+  - Eliminates the need to ever commit production admin credentials into source control.
+
+### 2. Controllers & Views Created
+- Controllers: `LoginController`, `RegisterController`, `ForgotPasswordController`, `ResetPasswordController`, `AdminAuthController`, `AdminDashboardController`, `ProfileController`.
+- Form Requests: `LoginRequest`, `RegisterRequest`, `UpdateProfileRequest`, `UpdatePasswordRequest`, `SaveAddressRequest`.
+- Views: `layouts/auth.blade.php`, `layouts/admin.blade.php`, `auth/login.blade.php`, `auth/register.blade.php`, `auth/passwords/email.blade.php`, `auth/passwords/reset.blade.php`, `admin/auth/login.blade.php`, `admin/dashboard.blade.php`, `customer/profile.blade.php` (with full-page responsive address form complying with strict no-modal creation rule).
+
+### 3. Verification & Testing
+- Automated test suites:
+  - `tests/Feature/CustomerAuthTest.php`: 11 tests verifying guest access, registration, email/mobile login, rate limiting, profile/password/address updates, and purchase auto-account creation.
+  - `tests/Feature/AdminAuthTest.php`: 6 tests verifying server-side 403 authorization, admin login/logout, and `shopbd:create-admin` CLI command.
+  - `tests/Feature/DatabaseArchitectureTest.php`: 8 tests verifying models and schema.
+  - `tests/Unit/ExampleTest.php` & `tests/Feature/ExampleTest.php`.
+- **Test Result**: `27 passed (107 assertions) — Duration: 1.36s` (100% PASS).
+
+---
+
