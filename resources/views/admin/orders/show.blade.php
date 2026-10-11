@@ -339,8 +339,98 @@
             </div>
         </div>
 
-        <!-- Right Column: Customer & Timeline -->
+        <!-- Right Column: Logistics, Payment & Timeline -->
         <div class="col-lg-4">
+            <!-- Courier Logistics & Consignment Card -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="bi bi-truck text-primary me-2"></i>Courier Logistics
+                    </h5>
+                    @if($order->courier_provider)
+                        <span class="badge bg-primary-subtle text-primary text-uppercase">{{ $order->courier_provider }}</span>
+                    @endif
+                </div>
+                <div class="card-body p-3">
+                    @if($order->isDispatchedToCourier())
+                        <div class="mb-3">
+                            <div class="text-muted small">Tracking Code:</div>
+                            <div class="fw-bold text-dark font-monospace fs-6">
+                                {{ $order->courier_tracking_id }}
+                            </div>
+                        </div>
+                        @if($order->courier_consignment_id)
+                            <div class="mb-3">
+                                <div class="text-muted small">Consignment ID:</div>
+                                <div class="small font-monospace text-secondary">{{ $order->courier_consignment_id }}</div>
+                            </div>
+                        @endif
+                        <div class="mb-3">
+                            <div class="text-muted small">Courier Status:</div>
+                            @php
+                                $courierBadge = match($order->courier_status) {
+                                    'delivered' => 'bg-success',
+                                    'cancelled' => 'bg-danger',
+                                    'in_transit', 'shipped' => 'bg-info text-white',
+                                    default => 'bg-secondary text-white',
+                                };
+                            @endphp
+                            <span class="badge {{ $courierBadge }} px-3 py-1 text-uppercase">
+                                {{ $order->courier_status ?? 'Dispatched' }}
+                            </span>
+                        </div>
+                        @if($order->courier_dispatched_at)
+                            <div class="mb-3">
+                                <div class="text-muted small">Dispatched At:</div>
+                                <div class="small text-secondary">{{ $order->courier_dispatched_at->format('d M, Y h:i A') }}</div>
+                            </div>
+                        @endif
+
+                        <form action="{{ route('admin.orders.track-courier', $order->id) }}" method="POST" class="pt-2">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-arrow-repeat me-1"></i> Refresh Tracking Status
+                            </button>
+                        </form>
+                    @else
+                        @if($order->courier_error)
+                            <div class="alert alert-danger p-2 small mb-3">
+                                <strong>Last Dispatch Error:</strong> {{ $order->courier_error }}
+                            </div>
+                        @endif
+
+                        @if($order->canDispatchToCourier())
+                            <form action="{{ route('admin.orders.dispatch-courier', $order->id) }}" method="POST">
+                                @csrf
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-dark">Select Courier Partner</label>
+                                    <select name="provider" class="form-select form-select-sm" required>
+                                        @foreach($allCouriers as $key => $courier)
+                                            <option value="{{ $key }}" {{ $key === 'mock' ? 'selected' : '' }}>
+                                                {{ $courier['name'] }} {{ $courier['configured'] ? '(Configured)' : '(Mock / Sandbox)' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="form-text text-xs">
+                                        Mock courier allows seamless end-to-end testing without external API credentials.
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-box-seam me-1"></i> Create Consignment & Dispatch
+                                </button>
+                                <div class="text-xs text-muted mt-2 text-center">
+                                    Order will advance to <strong>SHIPPED</strong> automatically.
+                                </div>
+                            </form>
+                        @else
+                            <div class="text-muted small p-2 bg-light rounded text-center">
+                                Courier dispatch is available when the order status is <strong>Confirmed</strong> or <strong>Processing</strong>.
+                            </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+
             <!-- Payment Reconciliation Card -->
             <div class="card border-0 shadow-sm rounded-3 mb-4">
                 <div class="card-header bg-white border-bottom py-3">
@@ -355,12 +445,36 @@
                             {{ $order->payment_method === 'cod' ? 'Cash on Delivery (COD)' : strtoupper($order->payment_method) }}
                         </div>
                     </div>
+                    @if($order->gateway_transaction_id)
+                        <div class="mb-3">
+                            <div class="text-muted small">Gateway Transaction ID:</div>
+                            <div class="small font-monospace fw-semibold text-primary">
+                                {{ $order->gateway_transaction_id }}
+                            </div>
+                        </div>
+                    @endif
                     <div class="mb-3">
                         <div class="text-muted small">Current Payment Status:</div>
                         <span class="badge {{ $order->payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark' }} px-3 py-2 text-uppercase fs-6">
                             {{ $order->payment_status }}
                         </span>
                     </div>
+
+                    @if($order->payments->isNotEmpty())
+                        <div class="border-top pt-2 mt-2 mb-3">
+                            <div class="text-muted small fw-semibold mb-2">Recorded Payments:</div>
+                            @foreach($order->payments as $p)
+                                <div class="p-2 bg-light rounded mb-2 small">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold">{{ strtoupper($p->payment_method) }}</span>
+                                        <span class="badge {{ $p->status === 'completed' ? 'bg-success' : 'bg-secondary' }}">{{ ucfirst($p->status) }}</span>
+                                    </div>
+                                    <div class="text-xs text-muted font-monospace mt-1">Txn: {{ $p->transaction_id }}</div>
+                                    <div class="text-xs text-secondary mt-1">৳{{ number_format($p->amount, 2) }} {{ $p->currency }} &bull; {{ $p->created_at->format('d M, h:i A') }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
 
                     <form action="{{ route('admin.orders.update-payment', $order->id) }}" method="POST" class="border-top pt-3">
                         @csrf

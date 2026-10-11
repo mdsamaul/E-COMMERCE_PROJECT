@@ -86,6 +86,33 @@
         </div>
     </div>
 
+    @if($order->courier_tracking_id)
+        <!-- Courier Tracking Card -->
+        <div class="card border-0 shadow-sm mb-4 border-start border-4 border-primary">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-primary-subtle text-primary p-3">
+                            <i class="bi bi-truck fs-3"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark">Courier Shipment in Progress</h6>
+                            <div class="small text-muted">
+                                Courier Partner: <strong class="text-dark">{{ strtoupper($order->courier_provider) }}</strong>
+                                &bull; Tracking ID: <span class="badge bg-light text-dark font-monospace border px-2 py-1">{{ $order->courier_tracking_id }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge {{ $order->courier_status === 'delivered' ? 'bg-success' : 'bg-primary text-white' }} px-3 py-2 text-uppercase fs-6">
+                            Status: {{ $order->courier_status ?? 'In Transit' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="row g-4 mb-4">
         <!-- Delivery Details (Left) -->
         <div class="col-lg-6">
@@ -123,10 +150,21 @@
                     <h6 class="fw-bold mb-0"><i class="bi bi-credit-card me-2 text-shop-primary"></i> Payment & Billing</h6>
                 </div>
                 <div class="card-body p-4">
+                    @php
+                        $paymentMethodName = match($order->payment_method) {
+                            'cod' => 'Cash on Delivery (COD)',
+                            'sslcommerz' => 'SSLCOMMERZ Online Gateway',
+                            'bkash' => 'bKash Merchant Payment',
+                            default => strtoupper($order->payment_method),
+                        };
+                    @endphp
                     <div class="row g-3">
                         <div class="col-6">
                             <span class="text-muted small d-block">Payment Method:</span>
-                            <strong class="text-dark">{{ strtoupper($order->payment_method) }} (Cash on Delivery)</strong>
+                            <strong class="text-dark">{{ $paymentMethodName }}</strong>
+                            @if($order->gateway_transaction_id)
+                                <div class="text-xs font-monospace text-muted mt-1">Txn: {{ $order->gateway_transaction_id }}</div>
+                            @endif
                         </div>
                         <div class="col-6">
                             <span class="text-muted small d-block">Payment Status:</span>
@@ -145,10 +183,15 @@
                             <span class="h5 fw-bold text-shop-primary mb-0">৳{{ number_format($order->total_amount, 2) }}</span>
                         </div>
                     </div>
-                    @if($order->payment_status === 'unpaid')
+                    @if($order->payment_status === 'unpaid' && $order->payment_method === 'cod')
                         <div class="alert alert-warning-subtle text-dark border-0 py-2 px-3 small mt-3 mb-0 rounded">
                             <i class="bi bi-info-circle me-1 text-warning"></i>
                             Please have <strong>৳{{ number_format($order->total_amount, 2) }}</strong> cash ready for our delivery courier upon arrival.
+                        </div>
+                    @elseif($order->payment_status === 'paid')
+                        <div class="alert alert-success-subtle text-success border-0 py-2 px-3 small mt-3 mb-0 rounded">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Payment verified and settled. Thank you for your purchase!
                         </div>
                     @endif
                 </div>

@@ -23,7 +23,7 @@ class CheckoutRequest extends FormRequest
             'district' => ['required', 'string', 'max:50'],
             'delivery_address' => ['required', 'string', 'min:5', 'max:500'],
             'delivery_notes' => ['nullable', 'string', 'max:500'],
-            'payment_method' => ['required', 'string', 'in:cod'],
+            'payment_method' => ['required', 'string', 'in:cod,sslcommerz,bkash'],
             'idempotency_key' => ['nullable', 'string', 'max:100'],
         ];
     }
@@ -35,7 +35,7 @@ class CheckoutRequest extends FormRequest
             'phone.required' => 'A valid Bangladesh mobile number is required for order delivery and SMS updates.',
             'district.required' => 'Please select your delivery district to compute accurate shipping charges.',
             'delivery_address.required' => 'Please enter the detailed street, road, house/apartment delivery address.',
-            'payment_method.in' => 'Currently Cash on Delivery (COD) is supported.',
+            'payment_method.in' => 'Please select a valid payment method.',
         ];
     }
 }
