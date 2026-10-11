@@ -1,0 +1,42 @@
+# ==============================================================================
+# ShopBD Shared Hosting Root .htaccess
+# Designed for Apache / LiteSpeed on cPanel & DirectAdmin
+# ==============================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Force HTTPS in Production (Uncomment once SSL is installed in cPanel)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 2. Prevent Direct Access to Sensitive Core Files & Hidden Directories
+    RewriteRule ^\.env - [F,L,NC]
+    RewriteRule ^\.git - [F,L,NC]
+    RewriteRule ^composer\.(json|lock) - [F,L,NC]
+    RewriteRule ^package(-lock)?\.json - [F,L,NC]
+    RewriteRule ^phpunit\.xml - [F,L,NC]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|tests)/ - [F,L,NC]
+    RewriteRule ^storage/logs/ - [F,L,NC]
+
+    # 3. Route all traffic safely to the public/ front controller directory
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# ==============================================================================
+# Global Security Directives & Headers
+# ==============================================================================
+<IfModule mod_headers.c>
+    # Prevent Clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    # Prevent MIME Sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    # XSS Protection for older browsers
+    Header always set X-XSS-Protection "1; mode=block"
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Prevent directory browsing
+Options -Indexes
