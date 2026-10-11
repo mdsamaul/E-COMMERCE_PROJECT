@@ -260,23 +260,57 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - `tests/Feature/CartAndCheckoutTest.php` (13 comprehensive feature tests covering guest/user carts, stock races, coupon validation, delivery fee calculation, COD order creation, snapshots, auto-provisioning, and idempotency).
   - Full test suite passing (76 tests, 358 assertions).
 
-### Phase 7: Customer Account, Order Tracking & Reviews
-- [ ] Customer dashboard and profile management.
-- [ ] Order history with live status timelines (Pending, Confirmed, Shipped, Delivered, Cancelled).
-- [ ] Detailed order tracking and invoice PDF download.
-- [ ] Customer address book management.
-- [ ] Customer wishlist management.
-- [ ] Product reviews and ratings submission for delivered orders.
+### Phase 7: Customer Account, Order Tracking, Wishlist, Reviews & Admin Order Processing (COMPLETED)
+- [x] Customer Order History & Tracking (`Customer\OrderController@index` & `customer/orders/index.blade.php`):
+  - Paginated listing with search by order number and status filtering tabs.
+  - Strict ownership validation: customers strictly view and access only their own orders (403 Forbidden on unauthorized access).
+- [x] Customer Order Detail & Lifecycle Stepper (`Customer\OrderController@show` & `customer/orders/show.blade.php`):
+  - Visual 5-stage fulfillment progress stepper (Placed -> Confirmed -> Processing -> Shipped -> Delivered).
+  - Item snapshots with thumbnails, SKUs, unit prices, and quantities.
+  - Delivery details, payment method, recipient phone and special instructions.
+  - Order cancellation control for pending/confirmed orders prior to shipping.
+  - Verified customer review submission form for delivered orders.
+- [x] Customer Printable Invoice (`Customer\OrderController@invoice` & `customer/orders/invoice.blade.php`):
+  - Clean, professional, printable A4 invoice layout with print media styling (`window.print()`).
+  - Company letterhead, customer address, item breakdown, BDT totals, and returns policy notice.
+- [x] Customer Wishlist Engine (`WishlistService`, `Customer\WishlistController` & `customer/wishlist/index.blade.php`):
+  - Add to wishlist, remove from wishlist, and direct Move-to-Cart with stock validation.
+  - Global view composer sharing live wishlist count in header.
+  - Empty state with store navigation CTA.
+- [x] Product Ratings & Reviews with Purchase Verification (`Customer\ReviewController`):
+  - Documented strict purchase-verification policy: customer can only review a product if they possess an order with status `delivered` containing that product.
+  - Mandatory admin moderation flag (`is_approved = false` on submission).
+  - Verified Purchase badges on customer storefront reviews.
+- [x] Server-Side Order State Machine & Safe Inventory Restocking (`OrderTransitionService` & `Order` model):
+  - Allowed status transitions matrix strictly validated on the server (`pending` -> `confirmed` -> `processing` -> `shipped` -> `delivered`, with `cancelled` / `returned` branch).
+  - Automated inventory restoration upon order cancellation or return.
+  - Guard check (`hasRestockedInventory()`) strictly preventing duplicate inventory incrementation if cancellation/return is triggered multiple times.
+  - Complete audit trail logged in `inventory_movements` (type `return` with previous and current stock counts).
+- [x] Admin Order Processing & Fulfillment Dashboard (`Admin\OrderController`, `admin/orders/index.blade.php`, `admin/orders/show.blade.php`, `admin/orders/invoice.blade.php`):
+  - Orders listing with quick metric tabs, search keyword, order status, payment status, shipping zone, and date filters.
+  - Full-page order management panel (Strict No-Modal Rule):
+    - Financial & Profit Margin calculations (COGS vs. Customer revenue vs. Gross Profit and Margin %).
+    - Allowed next transitions select box with transition remarks.
+    - Payment reconciliation form with audit logging in `payments` table.
+    - Ordered items table with line item profit analysis.
+    - Order status history timeline stepper with changer attribution and timestamps.
+    - Full inventory audit trail for the order.
+  - Dedicated admin printable warehouse packing slip and invoice (`admin/orders/invoice.blade.php`) with item verification checkboxes and packer signatures.
+- [x] Extensible Notification Architecture:
+  - Contract: `OrderNotificationInterface` defining `sendOrderPlaced` and `sendOrderStatusUpdated`.
+  - Concrete drivers: `SmsNotificationService`, `EmailNotificationService`, and `OrderNotificationManager`.
+  - Honest reporting: returns `['sent' => false, 'status' => 'not_configured']` when credentials are unset, never falsely claiming messages were dispatched.
+- [x] Automated Testing:
+  - `tests/Feature/CustomerOrderAndAccountTest.php` (11 feature tests covering history, detail ownership, invoice ownership, cancellation, safe restock, duplicate restock prevention, wishlist CRUD, and purchase-verified reviews).
+  - `tests/Feature/AdminOrderManagementTest.php` (8 feature tests covering admin filters, state machine transition validation, illegal transition rejection, payment reconciler, printable invoice, and honest notification reporting).
+  - 100% test pass rate (95 tests, 443 assertions).
 
-### Phase 10: Admin Order Fulfillment & Printable Invoice
-- [ ] Order management list with filters (status, date, search by customer phone or order ID).
-- [ ] Order details view with printable invoice.
-- [ ] Order status updater with remarks recorded in `order_status_histories`.
-
-### Phase 11: SEO, Polish, QA Testing & Shared Hosting Deployment Package
+### Phase 8: SEO, Performance Optimization & Polish
 - [ ] Dynamic meta tags, OpenGraph tags, sitemap.xml generator, robots.txt.
-- [ ] Full automated test suite (Unit & Feature tests covering auth, cart, checkout, admin).
-- [ ] Performance audit, asset minification check, `.htaccess` optimization for shared hosting.
+- [ ] Performance audit, asset minification check, database indexing verification.
+
+### Phase 9: Shared Hosting Deployment Package & cPanel Guide
+- [ ] Shared hosting preparation (`.htaccess` optimization, public directory symlink structure).
 - [ ] Deployment checklist and step-by-step cPanel deployment guide.
 
 ---
@@ -295,20 +329,22 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 | Seeders (BD Districts, Demo Catalog) | Database | Phase 2 | **Completed** |
 | Customer Auth (Login/Register) | Security | Phase 3 | **Completed** |
 | Admin Auth & Role Middleware | Security | Phase 3 | **Completed** |
-| Responsive Navbar & Footer | Customer UI | Phase 4 | Pending |
-| Homepage Hero & Product Grids | Customer UI | Phase 4 | Pending |
-| Product Catalog & Filtering | Customer UI | Phase 5 | Pending |
-| Product Details & Image Gallery | Customer UI | Phase 5 | Pending |
-| Session + User Cart | Customer Logic | Phase 6 | Pending |
-| Wishlist System | Customer Logic | Phase 6 | Pending |
-| Checkout & BD Address Form | Order Engine | Phase 7 | Pending |
-| Dhaka / Outside Dhaka Shipping | Order Engine | Phase 7 | Pending |
-| Cash On Delivery Payment | Order Engine | Phase 7 | Pending |
-| Coupon & Discount Validation | Order Engine | Phase 7 | Pending |
-| Customer Order History & Invoice | Customer Portal | Phase 8 | Pending |
-| Admin Sales & Orders Dashboard | Admin UI | Phase 9 | Pending |
-| Admin Product & Inventory CRUD | Admin UI | Phase 9 | Pending |
-| Admin Order Status Workflow | Admin Operations | Phase 10 | Pending |
-| Admin Banner & Coupon Controls | Admin Operations | Phase 10 | Pending |
-| SEO Sitemap & Meta Tags | SEO & Marketing | Phase 11 | Pending |
-| Shared Hosting Production Guide | Deployment | Phase 11 | Pending |
+| Admin Catalog CRUD & Dashboard | Admin UI | Phase 4 | **Completed** |
+| Responsive Navbar & Footer | Customer UI | Phase 5 | **Completed** |
+| Homepage Hero & Product Grids | Customer UI | Phase 5 | **Completed** |
+| Product Catalog & Filtering | Customer UI | Phase 5 | **Completed** |
+| Product Details & Image Gallery | Customer UI | Phase 5 | **Completed** |
+| Session + User Cart | Customer Logic | Phase 6 | **Completed** |
+| Checkout & BD Address Form | Order Engine | Phase 6 | **Completed** |
+| Dhaka / Outside Dhaka Shipping | Order Engine | Phase 6 | **Completed** |
+| Cash On Delivery Payment | Order Engine | Phase 6 | **Completed** |
+| Coupon & Discount Validation | Order Engine | Phase 6 | **Completed** |
+| Customer Order History & Invoices | Customer Portal | Phase 7 | **Completed** |
+| Customer Wishlist System | Customer Portal | Phase 7 | **Completed** |
+| Purchase-Verified Reviews | Social Proof | Phase 7 | **Completed** |
+| Order Status State Machine | Order Engine | Phase 7 | **Completed** |
+| Safe Inventory Restock Audit | Inventory | Phase 7 | **Completed** |
+| Admin Fulfillment & Margin Analytics | Admin Operations | Phase 7 | **Completed** |
+| Notification Interfaces (SMS/Email) | Notifications | Phase 7 | **Completed** |
+| SEO Sitemap & Meta Tags | SEO & Marketing | Phase 8 | Pending |
+| Shared Hosting Production Guide | Deployment | Phase 9 | Pending |

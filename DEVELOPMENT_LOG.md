@@ -327,4 +327,98 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 - Complete Application Test Suite:
   - `php artisan test`: **76 passed (358 assertions) — Duration: 5.15s** (100% PASS across all Phase 1-6 suites).
 
+---
+
+## [Phase 7] Customer Order History, Invoices, Wishlist, Purchase-Verified Reviews, State Machine & Admin Order Fulfillment
+**Date**: October 11, 2026  
+**Status**: COMPLETED  
+**Engineer**: Senior Laravel Developer, Software Architect & QA Engineer (Antigravity AI)  
+
+### 1. Architecture & Design Principles Applied
+- **Strict Customer Authorization & Isolation**:
+  - Customers are strictly authorized to view only their own orders, invoices, and wishlist items. Mismatches strictly throw `403 Forbidden` (`abort(403)`).
+- **Formal Order Status State Machine**:
+  - Defined `Order::ALLOWED_TRANSITIONS` matrix with valid next states (`pending` -> `confirmed` -> `processing` -> `shipped` -> `delivered`, with branches to `cancelled` and `returned`).
+  - Strict server-side validation in `OrderTransitionService` and `Admin\OrderController@updateStatus`. Invalid status jumps throw validation exceptions.
+  - Every transition creates an immutable record in `order_status_histories` with `from_status`, `to_status`, `remarks`, and `changed_by_user_id`.
+- **Safe Inventory Restocking with Audit Trail & Double-Restock Guard**:
+  - Cancelling or returning an order automatically restores inventory quantities.
+  - Guard check (`hasRestockedInventory()` via `Order` model) inspects existing `inventory_movements` where `type = 'return'` for the order, strictly preventing duplicate stock increases if cancellation/return is triggered multiple times.
+  - Every restocking event logs an audit trail in `inventory_movements` (type `return`, tracking previous stock, current stock, user ID, and reason).
+- **Customer Cancellation Rules**:
+  - Customers may only cancel orders while in `pending` or `confirmed` status (`Order::canBeCancelledByCustomer()`). Once an order advances to `processing`, `shipped`, or `delivered`, customer cancellation is prevented.
+- **Documented Purchase-Verification Review Policy**:
+  - Customer product reviews require proof of purchase: customer must have an order with status `delivered` containing that product.
+  - Reviews strictly default to unapproved (`is_approved = false`), requiring administrator moderation prior to public display.
+  - Verified reviews show a "Verified Purchase" trust badge in the storefront.
+- **Customer Wishlist System**:
+  - Implemented in `WishlistService` with support for adding, removing, and moving items directly to cart.
+  - Live header badge shared globally via `AppServiceProvider` View Composer (`$headerWishlistCount`).
+- **Admin Fulfillment & Margin Analytics**:
+  - Full-page order management dashboard (Strict No-Modal Rule).
+  - Calculates line-item and overall Cost of Goods Sold (COGS), Gross Profit in ৳, and Gross Margin %.
+  - Payment reconciliation tool recording payments in `payments` table.
+  - Full status history timeline and inventory movement audit logs.
+- **Printable Invoices**:
+  - Dedicated printable views for customers (`customer/orders/invoice.blade.php`) and administrators (`admin/orders/invoice.blade.php`).
+  - Integrated `@media print` styling, company letterhead, packing checklist checkboxes, and customer address details.
+- **Extensible & Honest Notification Architecture**:
+  - Contract: `OrderNotificationInterface` defining `sendOrderPlaced` and `sendOrderStatusUpdated`.
+  - Concrete drivers: `SmsNotificationService`, `EmailNotificationService`, and `OrderNotificationManager`.
+  - Honest reporting: returns `['sent' => false, 'status' => 'not_configured']` when credentials are absent, never falsely pretending messages were dispatched.
+
+### 2. Components & Routes Implemented
+- **Services & Contracts**:
+  - `app/Contracts/OrderNotificationInterface.php`: Contract for order events.
+  - `app/Services/Notification/SmsNotificationService.php`: SMS integration driver with honest configuration detection.
+  - `app/Services/Notification/EmailNotificationService.php`: Email notification driver.
+  - `app/Services/Notification/OrderNotificationManager.php`: Aggregator dispatcher for both channels.
+  - `app/Services/WishlistService.php`: Complete customer wishlist lifecycle and move-to-cart operations.
+  - `app/Services/OrderTransitionService.php`: Atomic status transitions, state machine enforcement, safe inventory restocking, audit trail, and notification dispatch.
+- **Controllers**:
+  - `app/Http/Controllers/Customer/OrderController.php`: Order listing, ownership-checked show, printable invoice, and customer cancellation.
+  - `app/Http/Controllers/Customer/WishlistController.php`: Wishlist listing, add, remove, and move-to-cart.
+  - `app/Http/Controllers/Customer/ReviewController.php`: Purchase-verification enforcement and moderation submission.
+  - `app/Http/Controllers/Admin/OrderController.php`: Admin listing with filters (status, payment, zone, dates, search), fulfillment show with profit analysis, status updater, payment reconciler, and admin packing slips.
+- **Views & UI**:
+  - `resources/views/customer/orders/index.blade.php`: Customer orders history with status pills and search.
+  - `resources/views/customer/orders/show.blade.php`: Customer order detail with 5-stage progress stepper, cancellation button, and delivered review submission form.
+  - `resources/views/customer/orders/invoice.blade.php`: Printable customer A4 invoice.
+  - `resources/views/customer/wishlist/index.blade.php`: Customer wishlist with stock status, Move to Cart, and remove.
+  - `resources/views/admin/orders/index.blade.php`: Admin orders table with quick status count tabs, search, and multi-filters.
+  - `resources/views/admin/orders/show.blade.php`: Admin order fulfillment dashboard with profit breakdown, status updater, payment reconciler, and audit logs.
+  - `resources/views/admin/orders/invoice.blade.php`: Admin printable packing slip with warehouse verification checkboxes.
+  - `resources/views/frontend/products/show.blade.php`: Wishlist button added, Verified Purchase badge added.
+  - `resources/views/layouts/app.blade.php` & `layouts/admin.blade.php`: Header wishlist badge and admin Orders navigation.
+- **Routes (`routes/web.php`)**:
+  - Customer routes: `customer/orders`, `customer/orders/{orderNumber}`, `customer/orders/{orderNumber}/invoice`, `customer/orders/{orderNumber}/cancel`, `customer/wishlist`, `customer/wishlist/{productId}`, `customer/wishlist/{productId}/move-to-cart`, `customer/reviews`.
+  - Admin routes: `admin/orders`, `admin/orders/{order}`, `admin/orders/{order}/status`, `admin/orders/{order}/payment`, `admin/orders/{order}/invoice`.
+
+### 3. Verification & Testing
+- Automated Feature Test Suites:
+  - `tests/Feature/CustomerOrderAndAccountTest.php` (11 tests):
+    - `test_customer_can_view_their_order_history_and_cannot_see_others_orders`
+    - `test_customer_can_view_their_own_order_details`
+    - `test_customer_cannot_view_another_customers_order_details` (403 Forbidden verified)
+    - `test_customer_can_view_their_own_printable_invoice`
+    - `test_customer_cannot_view_another_customers_printable_invoice` (403 Forbidden verified)
+    - `test_customer_can_cancel_pending_order_and_inventory_is_safely_restocked` (stock restored & return movement logged)
+    - `test_inventory_is_not_restocked_multiple_times_on_repeated_transitions` (double-restock guard verified)
+    - `test_customer_cannot_cancel_shipped_order`
+    - `test_customer_can_manage_wishlist` (add, view, move-to-cart, remove)
+    - `test_customer_cannot_review_product_without_delivered_order` (strict policy verified)
+    - `test_customer_with_delivered_order_can_submit_review_which_requires_moderation` (`is_approved = false` verified)
+  - `tests/Feature/AdminOrderManagementTest.php` (8 tests):
+    - `test_non_admin_cannot_access_admin_orders` (403/redirect verified)
+    - `test_admin_can_view_orders_index_with_filters` (status & search verified)
+    - `test_admin_can_view_order_details_and_profit_margins` (COGS and gross margin verified)
+    - `test_admin_can_advance_order_through_valid_state_transitions` (4 transitions & history log verified)
+    - `test_admin_cannot_execute_invalid_order_status_transition` (illegal jump rejected with validation error)
+    - `test_admin_can_reconcile_payment_status` (payment record created)
+    - `test_admin_can_view_printable_invoice`
+    - `test_notification_interfaces_report_honestly_when_unconfigured` (honest reporting verified)
+- Complete Application Test Suite:
+  - `php artisan test`: **95 passed (443 assertions) — Duration: 3.88s** (100% PASS across all Phase 1-7 suites).
+
+
 

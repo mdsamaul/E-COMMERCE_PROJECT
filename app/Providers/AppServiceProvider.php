@@ -21,10 +21,18 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Support\Facades\View::composer('*', function ($view) {
             try {
-                $cartCount = app(\App\Services\CartService::class)->getCartCount(auth()->user());
-                $view->with('headerCartCount', $cartCount);
+                $user = auth()->user();
+                $cartCount = app(\App\Services\CartService::class)->getCartCount($user);
+                $wishlistCount = $user ? app(\App\Services\WishlistService::class)->getWishlistCount($user) : 0;
+                $view->with([
+                    'headerCartCount' => $cartCount,
+                    'headerWishlistCount' => $wishlistCount,
+                ]);
             } catch (\Throwable $e) {
-                $view->with('headerCartCount', 0);
+                $view->with([
+                    'headerCartCount' => 0,
+                    'headerWishlistCount' => 0,
+                ]);
             }
         });
     }

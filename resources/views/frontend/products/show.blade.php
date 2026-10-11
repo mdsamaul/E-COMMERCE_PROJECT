@@ -143,6 +143,26 @@
                         </div>
                     </div>
                 </form>
+
+                <div class="mb-4">
+                    <form action="{{ route('customer.wishlist.store') }}" method="POST" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-heart me-1"></i> Add to Wishlist
+                        </button>
+                    </form>
+                </div>
+            @else
+                <div class="mb-4">
+                    <form action="{{ route('customer.wishlist.store') }}" method="POST" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-heart me-1"></i> Add to Wishlist
+                        </button>
+                    </form>
+                </div>
             @endif
 
             <!-- Delivery & Return Trust Box -->
@@ -246,7 +266,12 @@
                         @foreach($product->approvedReviews as $review)
                             <div class="list-group-item px-0 py-3">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <div class="fw-bold">{{ $review->user?->name ?? 'Verified Customer' }}</div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-bold">{{ $review->user?->name ?? 'Customer' }}</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">
+                                            <i class="bi bi-patch-check-fill me-1"></i>Verified Purchase
+                                        </span>
+                                    </div>
                                     <small class="text-muted">{{ $review->created_at->format('d M, Y') }}</small>
                                 </div>
                                 <div class="text-warning small mb-2">
@@ -262,7 +287,7 @@
                     <div class="text-center py-4 text-muted">
                         <i class="bi bi-chat-square-quote fs-1 d-block mb-2"></i>
                         <p class="mb-0">There are no customer reviews for this product yet.</p>
-                        <small>Customers who purchase this item can submit verified feedback.</small>
+                        <small>Customers who purchase this item can submit verified feedback from their Delivered Order page.</small>
                     </div>
                 @endif
             </div>

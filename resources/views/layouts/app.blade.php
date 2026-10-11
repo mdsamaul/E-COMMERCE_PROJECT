@@ -246,6 +246,8 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                     <li><a class="dropdown-item" href="{{ route('customer.profile') }}"><i class="bi bi-person me-2"></i> My Account</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('customer.orders.index') }}"><i class="bi bi-bag-check me-2"></i> My Orders</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('customer.wishlist.index') }}"><i class="bi bi-heart me-2 text-danger"></i> My Wishlist</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form method="POST" action="{{ route('logout') }}">
@@ -263,6 +265,14 @@
                                 Register
                             </a>
                         @endauth
+
+                        <!-- Wishlist Indicator -->
+                        <a href="{{ route('customer.wishlist.index') }}" class="btn btn-sm btn-light border position-relative" title="My Wishlist">
+                            <i class="bi bi-heart fs-6 text-danger"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="wishlistCountBadge">
+                                {{ $headerWishlistCount ?? 0 }}
+                            </span>
+                        </a>
 
                         <!-- Cart Indicator -->
                         <a href="{{ route('cart.index') }}" class="btn btn-sm btn-light border position-relative" title="Shopping Cart">
@@ -337,6 +347,15 @@
                     <i class="bi bi-cart3 me-2"></i> Shopping Cart
                     <span class="badge bg-danger rounded-pill float-end">{{ $headerCartCount ?? 0 }}</span>
                 </a>
+                <a href="{{ route('customer.wishlist.index') }}" class="list-group-item list-group-item-action fw-bold text-danger">
+                    <i class="bi bi-heart me-2"></i> My Wishlist
+                    <span class="badge bg-danger rounded-pill float-end">{{ $headerWishlistCount ?? 0 }}</span>
+                </a>
+                @auth
+                    <a href="{{ route('customer.orders.index') }}" class="list-group-item list-group-item-action fw-bold">
+                        <i class="bi bi-bag-check me-2"></i> My Orders
+                    </a>
+                @endauth
 
                 <div class="p-2 px-3 text-uppercase text-muted small fw-bold mt-2">Categories</div>
                 @foreach(\App\Models\Category::active()->root()->orderBy('sort_order')->take(8)->get() as $cat)

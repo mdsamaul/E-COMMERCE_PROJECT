@@ -93,6 +93,13 @@ class Product extends Model
      | Accessors & Helpers
      | ------------------------------------------------------------------------- */
 
+    protected function price(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->effective_price
+        );
+    }
+
     protected function effectivePrice(): Attribute
     {
         return Attribute::make(

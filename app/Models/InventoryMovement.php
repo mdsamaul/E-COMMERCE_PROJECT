@@ -44,4 +44,19 @@ class InventoryMovement extends Model
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
+
+    public function createdByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    public function getQuantityAttribute(): int
+    {
+        return $this->quantity_change;
+    }
+
+    public function getNewStockAttribute(): int
+    {
+        return $this->current_stock;
+    }
 }
