@@ -21,6 +21,20 @@
                     <strong class="font-monospace text-shop-primary fs-5">{{ $order->order_number }}</strong>
                 </div>
 
+                @if(session('success'))
+                    <div class="alert alert-success border-0 shadow-sm mx-auto text-start py-2 px-3 small my-2" style="max-width: 600px;">
+                        <i class="bi bi-check-circle-fill me-2 fs-6"></i>
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-warning border-0 shadow-sm mx-auto text-start py-2 px-3 small my-2" style="max-width: 600px;">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 @if(session('account_created_notice'))
                     <div class="alert alert-info border-0 shadow-sm mx-auto text-start py-2 px-3 small my-2" style="max-width: 600px;">
                         <i class="bi bi-person-check-fill me-2 fs-6"></i>
@@ -64,15 +78,32 @@
                         <!-- Payment & Status Details -->
                         <div class="col-md-6">
                             <h6 class="fw-bold text-uppercase text-secondary small mb-2">Payment & Delivery Status</h6>
+                            @php
+                                $methodTitle = match($order->payment_method) {
+                                    'cod' => 'Cash on Delivery (COD)',
+                                    'sslcommerz' => 'SSLCOMMERZ Online Payment',
+                                    'bkash' => 'bKash Merchant Payment',
+                                    default => strtoupper($order->payment_method),
+                                };
+                            @endphp
                             <div class="mb-2">
                                 <span class="text-muted small d-block">Payment Method:</span>
-                                <strong class="text-dark">Cash on Delivery (COD)</strong>
+                                <strong class="text-dark">{{ $methodTitle }}</strong>
+                                @if($order->gateway_transaction_id)
+                                    <div class="text-xs font-monospace text-muted mt-1">Txn: {{ $order->gateway_transaction_id }}</div>
+                                @endif
                             </div>
                             <div class="mb-2">
                                 <span class="text-muted small d-block">Payment Status:</span>
-                                <span class="badge bg-warning text-dark px-2 py-1">
-                                    <i class="bi bi-hourglass-split me-1"></i> Unpaid (Pay ৳{{ number_format($order->total_amount, 2) }} upon delivery)
-                                </span>
+                                @if($order->payment_status === 'paid')
+                                    <span class="badge bg-success px-2 py-1">
+                                        <i class="bi bi-check-circle me-1"></i> Paid (৳{{ number_format($order->total_amount, 2) }})
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning text-dark px-2 py-1">
+                                        <i class="bi bi-hourglass-split me-1"></i> Unpaid (Pay ৳{{ number_format($order->total_amount, 2) }} upon delivery)
+                                    </span>
+                                @endif
                             </div>
                             <div>
                                 <span class="text-muted small d-block">Order Status:</span>

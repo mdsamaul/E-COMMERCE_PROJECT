@@ -305,11 +305,36 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - `tests/Feature/AdminOrderManagementTest.php` (8 feature tests covering admin filters, state machine transition validation, illegal transition rejection, payment reconciler, printable invoice, and honest notification reporting).
   - 100% test pass rate (95 tests, 443 assertions).
 
-### Phase 8: SEO, Performance Optimization & Polish
+### Phase 8: Optional Payment Gateways & Courier Integrations (Completed)
+- [x] Standardized Contracts:
+  - `PaymentGatewayInterface`: Standardizing `getName()`, `getDisplayName()`, `isConfigured()`, `initiatePayment()`, `verifyPayment()`, and `refundPayment()`.
+  - `CourierServiceInterface`: Standardizing `getName()`, `getDisplayName()`, `isConfigured()`, `createConsignment()`, `trackConsignment()`, and `cancelConsignment()`.
+- [x] Cash on Delivery (COD) Independence:
+  - 100% operational without external network calls or merchant credentials.
+- [x] Bangladesh Payment Gateways Architecture:
+  - `SslCommerzPaymentGateway`: Official v4 session initiation (`gwprocess/v4/api.php`) and back-office order validation API (`validationserverAPI.php`).
+  - `BkashPaymentGateway`: Official Tokenized Checkout v1.2.0-beta (`grantToken`, `create`, `execute`).
+  - Zero card storage policy (PCI-DSS compliance): no card numbers or CVVs ever touch ShopBD servers.
+  - Strict callback idempotency & validation: server-side validation of currency (`BDT`), exact amount matching, and duplicate payment prevention.
+- [x] Bangladesh Courier Logistics Architecture:
+  - `MockCourierService`: Deterministic consignment IDs and `TRK-BD-XXXX` tracking codes for testing without live API keys.
+  - `SteadfastCourierService`: Official Steadfast `/create_order` and `/status_by_invoice` API integration.
+  - `PathaoCourierService`: Official Pathao Aladdin OAuth2 and `/orders` API integration.
+  - `CourierManager`: Handles automated consignment creation, stores tracking codes, auto-advances order state from `processing` to `shipped`, and manages live tracking status refreshes.
+- [x] Admin & Customer UI Enhancements:
+  - Admin Order Details: dedicated Courier Logistics card with provider selector and live tracking refresh, plus recorded payments audit box (Strict No-Modal Rule).
+  - Customer Order Details: displays courier partner name, tracking badge, and live delivery status.
+  - Checkout UI: dynamically renders Cash on Delivery alongside configured online gateways or unconfigured notice.
+- [x] Documentation & Test Suite:
+  - `docs/PAYMENT_AND_COURIER_INTEGRATION_PLAN.md`: Comprehensive official specification, security matrix, environment variable setup, and testing guide.
+  - `tests/Feature/PaymentAndCourierIntegrationTest.php`: 14 automated feature tests verifying gateways, callbacks, mock dispatch, admin/customer UI, and idempotency.
+  - 100% overall test pass rate (109 tests, 514 assertions).
+
+### Phase 9: SEO, Performance Optimization & Polish
 - [ ] Dynamic meta tags, OpenGraph tags, sitemap.xml generator, robots.txt.
 - [ ] Performance audit, asset minification check, database indexing verification.
 
-### Phase 9: Shared Hosting Deployment Package & cPanel Guide
+### Phase 10: Shared Hosting Deployment Package & cPanel Guide
 - [ ] Shared hosting preparation (`.htaccess` optimization, public directory symlink structure).
 - [ ] Deployment checklist and step-by-step cPanel deployment guide.
 
@@ -346,5 +371,12 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 | Safe Inventory Restock Audit | Inventory | Phase 7 | **Completed** |
 | Admin Fulfillment & Margin Analytics | Admin Operations | Phase 7 | **Completed** |
 | Notification Interfaces (SMS/Email) | Notifications | Phase 7 | **Completed** |
-| SEO Sitemap & Meta Tags | SEO & Marketing | Phase 8 | Pending |
-| Shared Hosting Production Guide | Deployment | Phase 9 | Pending |
+| Payment Gateway Interfaces & Manager | Integrations | Phase 8 | **Completed** |
+| SSLCOMMERZ v4 & bKash Adapters | Integrations | Phase 8 | **Completed** |
+| Callback Idempotency & Currency Checks | Security | Phase 8 | **Completed** |
+| Courier Interfaces & Manager | Logistics | Phase 8 | **Completed** |
+| Steadfast, Pathao & Mock Adapters | Logistics | Phase 8 | **Completed** |
+| Admin Courier Dispatch & Tracking | Operations | Phase 8 | **Completed** |
+| Customer Tracking Display | Customer Portal | Phase 8 | **Completed** |
+| SEO Sitemap & Meta Tags | SEO & Marketing | Phase 9 | Pending |
+| Shared Hosting Production Guide | Deployment | Phase 10 | Pending |

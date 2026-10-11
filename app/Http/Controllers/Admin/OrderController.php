@@ -12,12 +12,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Services\Courier\CourierManager;
 use Illuminate\View\View;
 
 class OrderController extends Controller
 {
     public function __construct(
-        protected OrderTransitionService $transitionService
+        protected OrderTransitionService $transitionService,
+        protected CourierManager $courierManager
     ) {}
 
     /**
@@ -112,6 +114,8 @@ class OrderController extends Controller
             'profitMargin' => round($profitMargin, 1),
             'allowedTransitions' => $allowedTransitions,
             'inventoryMovements' => $inventoryMovements,
+            'availableCouriers' => $this->courierManager->getAvailableCouriers(),
+            'allCouriers' => $this->courierManager->getAllCouriersStatus(),
         ]);
     }
 
@@ -173,6 +177,39 @@ class OrderController extends Controller
         }
 
         return back()->with('success', "Payment status for Order #{$order->order_number} updated to " . strtoupper($newPaymentStatus) . ".");
+    }
+
+    /**
+     * Dispatch order to external or mock courier provider.
+     */
+    public function dispatchCourier(Request $request, Order $order): RedirectResponse
+    {
+        $request->validate([
+            'provider' => ['required', 'string', 'in:mock,steadfast,pathao'],
+        ]);
+
+        $provider = $request->input('provider');
+        $result = $this->courierManager->dispatchOrder($order, $provider, Auth::user());
+
+        if ($result['success']) {
+            return back()->with('success', "Order #{$order->order_number} dispatched with {$provider}. Tracking Code: " . $result['tracking_code']);
+        }
+
+        return back()->with('error', "Courier dispatch failed: " . ($result['error'] ?? 'Unknown error.'));
+    }
+
+    /**
+     * Refresh live courier tracking status.
+     */
+    public function trackCourier(Order $order): RedirectResponse
+    {
+        $result = $this->courierManager->trackOrder($order);
+
+        if ($result['success']) {
+            return back()->with('info', "Courier tracking update: Status is " . strtoupper($result['status'] ?? 'pending'));
+        }
+
+        return back()->with('warning', "Unable to update tracking: " . ($result['message'] ?? 'No response'));
     }
 
     /**

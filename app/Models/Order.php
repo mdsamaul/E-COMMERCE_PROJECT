@@ -34,6 +34,14 @@ class Order extends Model
         'order_status',
         'delivery_notes',
         'admin_notes',
+        'courier_provider',
+        'courier_tracking_id',
+        'courier_consignment_id',
+        'courier_status',
+        'courier_error',
+        'courier_response',
+        'courier_dispatched_at',
+        'gateway_transaction_id',
     ];
 
     protected function casts(): array
@@ -43,6 +51,8 @@ class Order extends Model
             'subtotal' => 'decimal:2',
             'discount_amount' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'courier_response' => 'array',
+            'courier_dispatched_at' => 'datetime',
         ];
     }
 
@@ -127,6 +137,24 @@ class Order extends Model
     public function canBeCancelledByCustomer(): bool
     {
         return in_array($this->order_status, [self::STATUS_PENDING, self::STATUS_CONFIRMED], true);
+    }
+
+    /**
+     * Determine if order has been booked/dispatched with a courier provider.
+     */
+    public function isDispatchedToCourier(): bool
+    {
+        return !empty($this->courier_tracking_id) || !empty($this->courier_consignment_id);
+    }
+
+    /**
+     * Determine if order is eligible for courier dispatch.
+     * Order must not already be dispatched and must be in confirmed or processing state.
+     */
+    public function canDispatchToCourier(): bool
+    {
+        return !$this->isDispatchedToCourier() 
+            && in_array($this->order_status, [self::STATUS_CONFIRMED, self::STATUS_PROCESSING], true);
     }
 
     /**
