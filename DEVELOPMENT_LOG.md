@@ -563,3 +563,50 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
   - `test_stock_locking_and_inventory_movement_on_order_checkout` (PASS)
 - Complete Application Test Suite:
   - `php artisan test`: **123 passed (564 assertions) — Duration: 5.78s** (100% PASS across all 9 phases, 0 failures).
+
+---
+
+## Phase 10: Shared Hosting Deployment Package & cPanel Guide
+
+### 1. Architecture & Design Principles Applied
+- **Web Root Isolation & Security Directives**:
+  - Root `.htaccess` implements strict rewrite rules denying access to `.env`, `.git`, `composer.json`, `package.json`, `phpunit.xml`, `storage/logs/`, and core application directories (`app`, `bootstrap`, `config`, `database`, `resources`, `routes`, `tests`), routing web traffic safely to `public/`.
+  - `public/.htaccess` hardened with security headers (`X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`), automatic HTTPS redirection directive, and browser caching expiration rules for CSS, JS, fonts, and images.
+  - Documented Two-Directory Strategy for shared hosting where the Laravel core sits outside `public_html` (`/home/username/shopbd_core`) and only compiled public assets reside inside `public_html`.
+- **Production Environment Hardening**:
+  - Created `.env.production.example` featuring `APP_ENV=production`, `APP_DEBUG=false`, daily rotating logs (`LOG_CHANNEL=daily`, 14-day retention), secure cookies (`SESSION_SECURE_COOKIE=true`), file-based caching and database-backed sessions compatible with zero-Redis shared hosting plans.
+- **Automated Deployment & Maintenance Tooling**:
+  - Packaging: `scripts/build-production-package.ps1` runs Vite production builds and packages the application without dev dependencies, tests, or local secrets.
+  - Deployment: `scripts/deploy-cpanel.sh` executes directory permission fixes (`chmod 775`), Composer autoloader optimization, database migrations (`php artisan migrate --force`), storage symlink, and production caching (`config:cache`, `route:cache`, `view:cache`).
+  - Backup: `scripts/backup-cpanel.sh` automates compressed MySQL dumps (`mysqldump | gzip`) and uploaded media archives (`storage/app/public`) with automatic 14-day rotation.
+- **Production Diagnostic Smoke Testing**:
+  - Implemented `ShopBdSmokeTestCommand` (`php artisan shopbd:smoke-test`) providing a 10-point health check verifying database connection, application encryption key, environment and debug settings, HTTPS scheme, storage and cache permissions, public symlink, admin accounts, catalog availability, settings, and web root isolation.
+
+### 2. Components Implemented
+- **Console Commands**:
+  - `app/Console/Commands/ShopBdSmokeTestCommand.php`: Production deployment health check command.
+- **Configuration & Security**:
+  - `.htaccess`: Root directory security and rewrite engine.
+  - `public/.htaccess`: Enhanced with HTTPS enforcement, security headers, and asset expiration.
+  - `.env.production.example`: Shared hosting production template.
+- **Automation Scripts**:
+  - `scripts/build-production-package.ps1`: Automated packaging script for cPanel uploads.
+  - `scripts/deploy-cpanel.sh`: One-command cPanel Terminal/SSH deployment script.
+  - `scripts/backup-cpanel.sh`: Database & media backup script with rotation.
+- **Documentation**:
+  - `docs/CPANEL_SHARED_HOSTING_DEPLOYMENT_GUIDE.md`: Comprehensive 11-section cPanel deployment guide.
+- **Automated Tests**:
+  - `tests/Feature/SharedHostingDeploymentTest.php`: 8 feature tests verifying smoke test command, environment defaults, `.htaccess` security rules, build manifests, and permissions.
+
+### 3. Verification & Testing
+- Automated Feature Test Suite (`tests/Feature/SharedHostingDeploymentTest.php` - 8 tests, 41 assertions):
+  - `test_smoke_test_command_runs_successfully` (PASS)
+  - `test_production_env_template_exists_and_has_secure_defaults` (PASS)
+  - `test_root_htaccess_protects_sensitive_files` (PASS)
+  - `test_public_htaccess_contains_security_headers_and_expires` (PASS)
+  - `test_production_asset_build_manifest_exists` (PASS)
+  - `test_storage_and_cache_directories_exist_and_are_writable` (PASS)
+  - `test_deployment_and_backup_automation_scripts_exist` (PASS)
+  - `test_smoke_test_identifies_missing_admin_and_fails` (PASS)
+- Complete Application Test Suite:
+  - `php artisan test`: **131 passed (605 assertions) — Duration: 5.98s** (100% PASS across all 10 phases, 0 failures).
