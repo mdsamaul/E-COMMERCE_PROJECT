@@ -41,6 +41,10 @@ class LoginController extends Controller
         }
 
         $request->clearRateLimit();
+        $guestSessionId = $request->session()->get('cart_token') ?: $request->session()->getId();
+        if ($guestSessionId) {
+            app(\App\Services\CartService::class)->mergeGuestCartToUser($guestSessionId, $result['user']);
+        }
         $request->session()->regenerate();
 
         if ($result['user']->isAdmin()) {

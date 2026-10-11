@@ -220,34 +220,53 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - `tests/Feature/CustomerStorefrontTest.php` (11 tests).
   - Full test suite passing (63 tests, 273 assertions).
 
-### Phase 6: Shopping Cart & Wishlist System
-- [ ] Dual-state cart: Guest session-based cart + authenticated persistent cart.
-- [ ] Automatic cart merger upon customer login.
-- [ ] Add, update quantity, remove, and clear cart actions with real-time feedback.
-- [ ] Stock validation during cart manipulation.
-- [ ] Customer wishlist management.
+### Phase 6: Shopping Cart & Checkout System (Completed)
+- [x] Dual-state cart architecture: Guest session-based cart token + authenticated persistent database cart.
+- [x] Automatic cart merger upon customer login and registration (`CartService@mergeGuestCartToUser`).
+- [x] Full CRUD cart operations: Add, update quantity, remove, and clear cart actions with strict server validation.
+- [x] Server-side stock and availability validation:
+  - Prevention of adding inactive products or out-of-stock items.
+  - Strict enforcement of available stock quantities on add/update.
+  - Automatic inventory synchronization on cart view.
+- [x] Real-time cart calculations and live header badge with View Composer and AJAX polling endpoint (`/cart/count`).
+- [x] Full-page responsive Shopping Cart view (`resources/views/frontend/cart/index.blade.php`, strict no-modal rule):
+  - Line items with product thumbnail, name, SKU, unit price, quantity increment/decrement controls, subtotal, and remove button.
+  - Empty cart state with shopping CTA.
+  - Coupon code entry form with instant validation (min spend, expiry, usage count).
+  - Estimated delivery charge and free shipping progress alert.
+- [x] Full-page responsive Checkout Form (`resources/views/frontend/checkout/index.blade.php`, strict no-modal rule):
+  - Recipient full name, Bangladesh mobile number (+880 validation), optional alternative phone, email.
+  - Bangladesh 64-districts dropdown with real-time dynamic shipping fee recalculation:
+    - Inside Dhaka City: ৳60.00
+    - Outside Dhaka (Nationwide): ৳120.00
+    - Free delivery for orders above threshold (৳2,500.00).
+  - Detailed street/house delivery address and optional delivery instructions.
+  - Order review preview with snapshot of items and financial breakdown.
+- [x] Atomic Checkout Engine with Pessimistic Locking (`OrderService@processCheckout`):
+  - Database transaction (`DB::transaction`) with `Product::lockForUpdate()` to prevent overselling race conditions.
+  - Recalculates subtotal, discount, shipping, and total amount strictly on the server.
+  - Idempotency token validation to prevent duplicate orders from rapid repeated clicks.
+  - Auto-account provisioning for guest shoppers using mobile number (`AuthService::findOrCreateFromPurchase`) and automatic delivery address persistence.
+  - Dedicated OrderItem snapshot persistence (capturing product name, SKU, purchase price, selling price, and quantity at purchase moment).
+  - Automatic inventory deduction and audit logging to `inventory_movements` (type: 'sale').
+  - Initial `OrderStatusHistory` logging (status: 'pending').
+  - Cart clearing and coupon usage tracking.
+  - Cash on Delivery (COD) initial implementation: Order marked as 'pending' and payment status as 'unpaid' (strictly not prepaid).
+- [x] Full-page Order Confirmation & Receipt View (`resources/views/frontend/checkout/confirmation.blade.php`):
+  - Unique order tracking number (`ORD-YYYYMMDD-XXXXXX`).
+  - Delivery details, payment method, items summary, and printable receipt.
+  - Guest auto-created account notice.
+- [x] Automated Testing:
+  - `tests/Feature/CartAndCheckoutTest.php` (13 comprehensive feature tests covering guest/user carts, stock races, coupon validation, delivery fee calculation, COD order creation, snapshots, auto-provisioning, and idempotency).
+  - Full test suite passing (76 tests, 358 assertions).
 
-### Phase 7: Shopping Cart & Wishlist System
-- [ ] Dual-state cart: Guest session-based cart + authenticated persistent cart.
-- [ ] Automatic cart merger upon customer login.
-- [ ] Add, update quantity, remove, and clear cart actions with real-time feedback.
-- [ ] Stock validation during cart manipulation.
-- [ ] Customer wishlist management.
-
-### Phase 8: Checkout & Cash on Delivery (COD) Engine
-- [ ] Single-page / multi-step responsive checkout.
-- [ ] Bangladesh address form: Name, Phone, Alternative Phone, Division, District, Full Address, Delivery notes.
-- [ ] Dynamic shipping calculation: Inside Dhaka (৳60) vs Outside Dhaka (৳120).
-- [ ] Coupon application system with server-side validity checks (min spend, expiry, usage count).
-- [ ] Atomic order creation with `DB::transaction` and `lockForUpdate` stock deduction.
-- [ ] Order confirmation page with printable summary and tracking code.
-
-### Phase 9: Customer Account & Order History
-- [ ] Customer dashboard.
-- [ ] Order history with order status badges (Pending, Confirmed, Shipped, Delivered, Cancelled).
-- [ ] Detailed order receipt view.
+### Phase 7: Customer Account, Order Tracking & Reviews
+- [ ] Customer dashboard and profile management.
+- [ ] Order history with live status timelines (Pending, Confirmed, Shipped, Delivered, Cancelled).
+- [ ] Detailed order tracking and invoice PDF download.
 - [ ] Customer address book management.
-- [ ] Review submission for purchased items.
+- [ ] Customer wishlist management.
+- [ ] Product reviews and ratings submission for delivered orders.
 
 ### Phase 10: Admin Order Fulfillment & Printable Invoice
 - [ ] Order management list with filters (status, date, search by customer phone or order ID).

@@ -16,6 +16,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductCatalogController;
@@ -29,6 +31,30 @@ Route::get('/products', [ProductCatalogController::class, 'index'])->name('produ
 Route::get('/product/{slug}', [ProductCatalogController::class, 'show'])->name('products.show');
 Route::get('/category/{slug}', [ProductCatalogController::class, 'category'])->name('products.category');
 Route::get('/brand/{slug}', [ProductCatalogController::class, 'brand'])->name('products.brand');
+
+/* -----------------------------------------------------------------------------
+ | Shopping Cart Routes (Guest & Authenticated)
+ | ----------------------------------------------------------------------------- */
+Route::prefix('cart')->name('cart.')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::post('/', [CartController::class, 'store'])->name('add');
+    Route::post('/clear', [CartController::class, 'clear'])->name('clear');
+    Route::post('/coupon', [CartController::class, 'applyCoupon'])->name('coupon.apply');
+    Route::delete('/coupon', [CartController::class, 'removeCoupon'])->name('coupon.remove');
+    Route::get('/count', [CartController::class, 'count'])->name('count');
+    Route::put('/{id}', [CartController::class, 'update'])->whereNumber('id')->name('update');
+    Route::delete('/{id}', [CartController::class, 'destroy'])->whereNumber('id')->name('destroy');
+});
+
+/* -----------------------------------------------------------------------------
+ | Checkout Routes (Guest & Authenticated)
+ | ----------------------------------------------------------------------------- */
+Route::prefix('checkout')->name('checkout.')->group(function () {
+    Route::get('/', [CheckoutController::class, 'index'])->name('index');
+    Route::post('/calculate', [CheckoutController::class, 'calculate'])->name('calculate');
+    Route::post('/', [CheckoutController::class, 'store'])->name('store');
+});
+Route::get('/order/confirmation/{order_number}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 
 // Informative Pages
 Route::get('/about-us', [PageController::class, 'about'])->name('pages.about');

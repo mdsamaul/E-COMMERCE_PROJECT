@@ -271,4 +271,60 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 - Complete Application Test Suite:
   - `php artisan test`: **63 passed (273 assertions) — Duration: 3.16s** (100% PASS across all Phase 1-5 suites).
 
+---
+
+## [Phase 6] Shopping Cart & Cash on Delivery (COD) Checkout System
+**Date**: October 11, 2026  
+**Status**: COMPLETED  
+**Engineer**: Senior Laravel Developer & Software Architect (Antigravity AI)  
+
+### 1. Architecture & Design Principles Applied
+- **Dual-State Cart System with Automatic Merging**:
+  - Unauthenticated guests use session-based cart tracking (`session('cart_token')`) stored in the `carts` table with `user_id = null`.
+  - Authenticated customers store carts persistently linked to `user_id`.
+  - When a guest customer logs in or registers, `CartService@mergeGuestCartToUser` merges all guest cart line items into their persistent customer cart and cleans up the temporary guest cart record.
+- **Strict Server-Side Validation & Inventory Integrity**:
+  - Quantity, pricing, active status (`is_active = true`), and stock availability are strictly verified on the server for every add, update, and checkout action.
+  - Cart views automatically synchronize and adjust quantities if inventory dropped or items were deactivated.
+- **Atomic Checkout Engine with Pessimistic Locking**:
+  - Implemented in `OrderService@processCheckout` inside an atomic `DB::transaction()`.
+  - Uses `Product::whereIn('id', $productIds)->lockForUpdate()` to eliminate overselling race conditions between simultaneous shoppers.
+  - Recalculates subtotal, coupon discounts, shipping charges, and total amount on the server (never relying on client-submitted prices).
+  - Idempotency key caching prevents duplicate order creation on rapid double-clicks.
+  - Rollback on failure guarantees zero orphaned records or incorrect stock subtractions.
+- **Snapshot Persistence & Auditing**:
+  - `OrderItem` preserves an immutable snapshot of purchased product name, SKU, unit purchase price, unit selling price, quantity, and line subtotal.
+  - Automatically records `inventory_movements` of type `'sale'` with previous stock and updated stock.
+  - Logs initial order status in `order_status_histories`.
+- **Guest Auto-Account Provisioning**:
+  - When a guest checks out with their Bangladesh mobile number, `AuthService::findOrCreateFromPurchase` provisions a customer account if one does not exist, enabling future mobile login.
+  - Automatically saves the delivery address in the customer's `addresses` table.
+- **Strict No-Modal Rule & Responsive UI**:
+  - Dedicated full-page views for Shopping Cart (`cart/index.blade.php`), Checkout (`checkout/index.blade.php`), and Order Confirmation (`checkout/confirmation.blade.php`).
+  - Cash on Delivery (COD) supported initially; orders are created with `payment_method = 'cod'`, `order_status = 'pending'`, and `payment_status = 'unpaid'` (strictly unpaid until physical delivery).
+
+### 2. Components & Routes Implemented
+- **Services**:
+  - `app/Services/CartService.php`: Core cart lifecycle, item add/update/remove/clear, guest merging, inventory synchronization, and totals computation.
+  - `app/Services/OrderService.php`: Atomic checkout processor, pessimistic row locking, idempotency cache, snapshot creation, stock deduction, and audit trail logging.
+- **Controllers & Requests**:
+  - `app/Http/Controllers/CartController.php`: Cart index, store, update, destroy, clear, apply coupon, remove coupon, and live badge count endpoint.
+  - `app/Http/Controllers/CheckoutController.php`: Full-page checkout form, dynamic district calculation endpoint, order placement, and order confirmation receipt view.
+  - `app/Http/Requests/Frontend/CheckoutRequest.php`: Form request validation with `BangladeshPhone` rule, recipient name, district, address, and notes.
+- **Views & UI**:
+  - `resources/views/frontend/cart/index.blade.php`: Full-page responsive cart with quantity adjusters (+/-), SKU chips, coupon applicator, estimated shipping, and empty state.
+  - `resources/views/frontend/checkout/index.blade.php`: Full-page checkout with Bangladesh 64-districts dropdown, dynamic shipping calculation (Inside Dhaka ৳60 / Outside Dhaka ৳120 / Free above ৳2500), COD highlight, double-click prevention spinner.
+  - `resources/views/frontend/checkout/confirmation.blade.php`: Full-page order confirmation with printable receipt, tracking code (`ORD-YYYYMMDD-XXXXXX`), items summary, and COD instructions.
+  - Reusable Product Card & Product Details: Integrated "Add to Cart" and "Buy Now" forms.
+  - `AppServiceProvider.php`: Global View Composer sharing dynamic `$headerCartCount` across all views.
+- **Routes (`routes/web.php`)**:
+  - `/cart`, `/cart/clear`, `/cart/coupon`, `/cart/count`, `/cart/{id}` (constrained to numbers).
+  - `/checkout`, `/checkout/calculate`, `/checkout`, `/order/confirmation/{order_number}`.
+
+### 3. Verification & Testing
+- Automated test suite (`tests/Feature/CartAndCheckoutTest.php`):
+  - 13 comprehensive feature tests covering guest cart manipulation, stock limit validations, inactive/out-of-stock rejection, quantity updates & subtotal calculations, guest cart merging upon login, coupon rules & limits, Dhaka vs outside Dhaka shipping calculations, form validation, atomic COD checkout with snapshots & inventory movements, guest auto-account creation, stock race condition rollbacks, and idempotency protection (100% PASS).
+- Complete Application Test Suite:
+  - `php artisan test`: **76 passed (358 assertions) — Duration: 5.15s** (100% PASS across all Phase 1-6 suites).
+
 
