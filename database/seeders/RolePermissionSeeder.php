@@ -133,14 +133,17 @@ class RolePermissionSeeder extends Seeder
         $catalogManagerRole->permissions()->sync($catalogManagerPermissions);
 
         // 3. Guarantee Default Super Admin Account has is_super_admin = true and super-admin role
-        $superAdminUser = User::where('email', 'admin@shopbd.com')->first();
+        $superAdminUser = User::where('email', 'superadmin@shopbd.com')->orWhere(function ($q) {
+            $q->where('email', 'admin@shopbd.com')->where('is_super_admin', true);
+        })->first();
         if ($superAdminUser) {
-            $superAdminUser->update([
-                'is_super_admin' => true,
-                'role' => 'admin',
-                'is_active' => true,
-            ]);
-            $superAdminUser->roles()->syncWithoutDetaching([$superAdminRole->id]);
+            $superAdminUser->roles()->sync([$superAdminRole->id]);
+        }
+
+        // 4. Guarantee Regular Admin has admin role
+        $regularAdminUser = User::where('email', 'admin@shopbd.com')->where('is_super_admin', false)->first();
+        if ($regularAdminUser) {
+            $regularAdminUser->roles()->sync([$adminRole->id]);
         }
     }
 }

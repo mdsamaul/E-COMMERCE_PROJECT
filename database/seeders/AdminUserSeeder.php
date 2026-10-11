@@ -14,15 +14,29 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Create or update Default Admin
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@shopbd.com'],
+        // 1. Dedicated Super Admin
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'superadmin@shopbd.com'],
             [
                 'name' => 'ShopBD Super Admin',
                 'phone' => '01711000001',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('superadmin123'),
                 'role' => 'admin',
                 'is_super_admin' => true,
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 2. Dedicated Regular Admin
+        $regularAdmin = User::updateOrCreate(
+            ['email' => 'admin@shopbd.com'],
+            [
+                'name' => 'Operational Admin',
+                'phone' => '01711223344',
+                'password' => Hash::make('admin123'),
+                'role' => 'admin',
+                'is_super_admin' => false,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]
