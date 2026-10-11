@@ -98,8 +98,8 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 - [x] Test suite initialization (SQLite `:memory:` in `phpunit.xml`).
 - [x] Master documentation: `PROJECT_PLAN.md`, `DATABASE_DESIGN.md`, `DEVELOPMENT_LOG.md`.
 
-### Phase 2: Complete Database Architecture & Models
-- [ ] Create database migrations for all 21 core tables:
+### Phase 2: Complete Database Architecture & Models (COMPLETED)
+- [x] Create database migrations for all 21 core tables:
   - Users & Roles (`users`, `addresses`)
   - Catalog (`categories`, `brands`, `products`, `product_images`)
   - Shopping (`carts`, `cart_items`, `wishlists`, `wishlist_items`)
@@ -107,8 +107,9 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - Discounts & Promotions (`coupons`, `coupon_usages`, `banners`)
   - Engagement & Content (`reviews`, `settings`)
   - Auditing & Inventory (`inventory_movements`, `activity_logs`)
-- [ ] Eloquent models with relations, casts, fillable attributes, and soft deletes.
-- [ ] Database seeders with realistic demo data tailored for Bangladesh (Districts, categories, brands, sample products with BDT prices, admin user).
+- [x] Eloquent models with relations, casts, fillable attributes, and soft deletes.
+- [x] Database seeders with realistic demo data tailored for Bangladesh (Districts, categories, brands, sample products with BDT prices, admin user).
+- [x] Automated test suite verifying models, relationships, and constraints (`DatabaseArchitectureTest.php`).
 
 ### Phase 3: Authentication, Authorization & Security Baseline
 - [ ] Customer authentication (Registration, Login, Password Reset, Profile).
@@ -200,9 +201,9 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
 | Environment & BDT Config | Configuration | Phase 1 | **Completed** |
 | SQLite `:memory:` Test Suite | QA / Testing | Phase 1 | **Completed** |
 | Documentation Suite | Architecture | Phase 1 | **Completed** |
-| Database Migrations (21 Tables) | Database | Phase 2 | Pending |
-| Eloquent Models & Relations | Database | Phase 2 | Pending |
-| Seeders (BD Districts, Demo Catalog) | Database | Phase 2 | Pending |
+| Database Migrations (21 Tables) | Database | Phase 2 | **Completed** |
+| Eloquent Models & Relations | Database | Phase 2 | **Completed** |
+| Seeders (BD Districts, Demo Catalog) | Database | Phase 2 | **Completed** |
 | Customer Auth (Login/Register) | Security | Phase 3 | Pending |
 | Admin Auth & Role Middleware | Security | Phase 3 | Pending |
 | Responsive Navbar & Footer | Customer UI | Phase 4 | Pending |

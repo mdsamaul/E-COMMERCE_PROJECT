@@ -406,3 +406,59 @@ Security and administrative audit trail.
    - Deleting a category or brand sets product relationships to NULL or restricts deletion if active products exist.
    - Deleting a user keeps historical orders (`user_id` set to NULL) while maintaining recipient contact details in the order row.
    - Modifying a product's price never alters existing `order_items` records.
+
+---
+
+## 4. Migration Files & Execution Status
+
+All migrations executed and verified on MySQL / MariaDB (Database: `shopbd`):
+
+| # | Migration File | Status | Description |
+|---|---|---|---|
+| 01 | `2026_10_11_000001_add_role_and_phone_to_users_table.php` | Migrated | Adds `phone`, `role`, and `is_active` to `users` |
+| 02 | `2026_10_11_000002_create_categories_table.php` | Migrated | Hierarchical categories with parent-child support |
+| 03 | `2026_10_11_000003_create_brands_table.php` | Migrated | Product brand entities |
+| 04 | `2026_10_11_000004_create_products_table.php` | Migrated | Products with `DECIMAL(12,2)` prices, inventory, soft deletes |
+| 05 | `2026_10_11_000005_create_product_images_table.php` | Migrated | Gallery images with `is_primary` flag |
+| 06 | `2026_10_11_000006_create_addresses_table.php` | Migrated | Bangladesh delivery addresses (District, Division, etc.) |
+| 07 | `2026_10_11_000007_create_carts_and_cart_items_tables.php` | Migrated | Guest session & authenticated carts with unique cart items |
+| 08 | `2026_10_11_000008_create_wishlists_and_wishlist_items_tables.php` | Migrated | Customer saved items with unique product constraints |
+| 09 | `2026_10_11_000009_create_coupons_and_coupon_usages_tables.php` | Migrated | Fixed & percentage discounts with usage limits |
+| 10 | `2026_10_11_000010_create_orders_and_order_items_tables.php` | Migrated | Orders and immutable product line snapshots |
+| 11 | `2026_10_11_000011_create_order_status_histories_table.php` | Migrated | Audit trail of order status transitions |
+| 12 | `2026_10_11_000012_create_payments_table.php` | Migrated | Payments log (COD & gateway payload) |
+| 13 | `2026_10_11_000013_create_reviews_table.php` | Migrated | Moderated customer reviews & star ratings |
+| 14 | `2026_10_11_000014_create_banners_table.php` | Migrated | Homepage hero slider & promotional cards |
+| 15 | `2026_10_11_000015_create_settings_table.php` | Migrated | Key-value store for store configs & delivery fees |
+| 16 | `2026_10_11_000016_create_inventory_movements_table.php` | Migrated | Double-entry stock movement ledger |
+| 17 | `2026_10_11_000017_create_activity_logs_table.php` | Migrated | Administrative and security action trail |
+
+---
+
+## 5. Seeders & Sample Catalog Data
+
+Executed via `php artisan db:seed`:
+- **Default Accounts**:
+  - Super Admin: `admin@shopbd.com` / `password123` (`role: admin`)
+  - Demo Customer: `customer@shopbd.com` / `password123` (`role: customer`, with Dhanmondi default address)
+- **Categories**: 8 root categories (Clothing, Electronics, Groceries, Home Appliances, Accessories, Beauty Products, Books, General Products) + 21 subcategories.
+- **Brands**: 10 authentic Bangladeshi brands (Walton, Aarong, Apex, Samsung, Square, PRAN, Yellow, Singer, Unilever, ACI).
+- **Products**: 16 realistic demo products in BDT (৳) with SKUs, stock counts, primary & gallery images, opening inventory movement records, and verified reviews.
+- **Banners**: 3 hero slider banners + 1 promotional banner card.
+- **Settings**: Standard shipping charges (Inside Dhaka ৳60, Outside Dhaka ৳120), store contact details, currency symbol `৳`.
+- **Coupons**: `EID2026` (10% off), `WELCOME10` (10% off), `FREE60` (৳60 free shipping discount).
+
+---
+
+## 6. Automated Test Verification
+
+Verified by automated feature test suite `tests/Feature/DatabaseArchitectureTest.php` with 10 passed tests and 39 assertions:
+1. `test_user_creation_roles_and_address_relationships` ✓
+2. `test_category_hierarchy_and_brand_relationships` ✓
+3. `test_product_pricing_accessors_and_soft_deletes` ✓
+4. `test_cart_and_cart_item_calculations` ✓
+5. `test_wishlist_and_wishlist_items` ✓
+6. `test_coupon_calculations_and_validation` ✓
+7. `test_order_and_immutable_item_snapshots` ✓
+8. `test_settings_audit_logs_and_inventory_movements` ✓
+
