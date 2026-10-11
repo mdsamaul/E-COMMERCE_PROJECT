@@ -175,29 +175,57 @@ Shared hosting environments have distinct constraints that ShopBD explicitly acc
   - `AdminManagementTest.php` (12 tests)
   - Full test suite passing (52 tests, 217 assertions).
 
-### Phase 5: Customer Frontend Layout & Homepage
-- [ ] Master customer layout with top announcement bar (currency BDT, helpline), responsive navbar, search input, category dropdown, cart counter badge, and footer.
-- [ ] Dynamic homepage with:
-  - Hero slider / banners
-  - Category showcase with icons
-  - Featured products grid
-  - New arrivals and best sellers
-  - Value propositions (Fast delivery, COD available, Easy return)
-- [ ] Static pages: About Us, Contact, FAQ, Terms, Privacy Policy, Return Policy.
+### Phase 5: Complete Customer-Facing Storefront & Catalog (Completed)
+- [x] Responsive Master Storefront Layout (`resources/views/layouts/app.blade.php`):
+  - Top announcement bar with helpline, support email, BDT currency, and free shipping announcement.
+  - Main header with store branding, interactive global search bar, user account dropdown, wishlist & cart indicators.
+  - Category navigation bar with "All Categories" dropdown menu and quick navigation links.
+  - Mobile responsive offcanvas drawer for smartphones and tablets.
+  - Comprehensive footer with store bio, category links, customer support links, newsletter form, and Bangladeshi payment trust badges (bKash, Nagad, Rocket, Visa, COD).
+- [x] Dynamic Homepage (`HomeController@index` & `frontend/home.blade.php`):
+  - Dynamic hero slider carousel (`hero_slider` banners).
+  - Trust value propositions (100% Authentic, Fast Delivery, Cash on Delivery, 7-Day Returns).
+  - Featured categories showcase with product count.
+  - Flash deals section (discounted items with sale badges).
+  - Promotional grid card banners (`promo_card`).
+  - Featured highlights and New arrivals product grids.
+  - Trusted brand partners showcase.
+- [x] Product Catalog, Search & Filter Engine (`ProductCatalogController@index` & `frontend/products/index.blade.php`):
+  - Search by title, SKU, or description.
+  - Category and Brand filtering with live product counters.
+  - Price range filter (min ৳ to max ৳).
+  - In-stock availability filter.
+  - Sorting options: Newest, Price Low to High, Price High to Low, Popularity, Name A-Z.
+  - Accessible pagination and helpful empty states.
+- [x] Product Detail Page (`ProductCatalogController@show` & `frontend/products/show.blade.php`):
+  - Dynamic breadcrumbs navigation.
+  - Product image gallery with lightweight vanilla JavaScript image switcher.
+  - Regular price vs. Sale price in ৳ with discount savings badge.
+  - In stock / Low stock / Out of stock availability badges.
+  - Interactive quantity selector (+ / -).
+  - Delivery charge rates and timelines (Inside Dhaka ৳60 in 24-48h, Outside Dhaka ৳120 in 3-5 days).
+  - Tabs for Full Description, Specifications, and Verified Customer Reviews.
+  - Related products recommendation grid.
+- [x] Category & Brand Browse Pages (`frontend/products/category.blade.php`, `brand.blade.php`):
+  - Category header with child subcategory chips.
+  - Brand header with official logo.
+  - Full product grids with pagination.
+- [x] Informative & Legal Pages (`PageController`):
+  - About Us (`/about-us`), FAQ (`/faq`), Privacy Policy (`/privacy-policy`), Terms & Conditions (`/terms-and-conditions`), Shipping Policy (`/shipping-policy`), Return & Refund Policy (`/return-policy`).
+  - Contact Us (`/contact`) with accessible message submission form and Bangladesh phone validation.
+- [x] Business Integrity & SEO:
+  - Strict publication status check: Only published products (`is_active = true`) shown to shoppers; unpublished items return 404.
+  - Complete OpenGraph and SEO meta tags.
+- [x] Automated Testing:
+  - `tests/Feature/CustomerStorefrontTest.php` (11 tests).
+  - Full test suite passing (63 tests, 273 assertions).
 
-### Phase 6: Product Catalog, Filters & Search
-- [ ] Category and Brand browse pages.
-- [ ] Product listing with sorting (price low-high, high-low, newest), price range filter, and category filter.
-- [ ] Live/server-side search with sanitized keywords.
-- [ ] Product detail page:
-  - Image gallery / thumbnails
-  - Title, SKU, Category, Brand, Stock badge
-  - Regular price vs. Sale price in ৳
-  - Add to Cart with quantity selector
-  - Add to Wishlist toggle
-  - Long description and specifications
-  - Related products carousel/grid
-  - Customer reviews list and submission form
+### Phase 6: Shopping Cart & Wishlist System
+- [ ] Dual-state cart: Guest session-based cart + authenticated persistent cart.
+- [ ] Automatic cart merger upon customer login.
+- [ ] Add, update quantity, remove, and clear cart actions with real-time feedback.
+- [ ] Stock validation during cart manipulation.
+- [ ] Customer wishlist management.
 
 ### Phase 7: Shopping Cart & Wishlist System
 - [ ] Dual-state cart: Guest session-based cart + authenticated persistent cart.

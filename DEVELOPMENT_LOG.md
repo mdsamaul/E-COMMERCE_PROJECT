@@ -214,3 +214,61 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 
 ---
 
+## [Phase 5] Complete Customer-Facing Storefront & Catalog Browsing
+**Date**: October 11, 2026  
+**Status**: COMPLETED  
+**Engineer**: Senior Laravel Developer & Software Architect (Antigravity AI)  
+
+### 1. Architecture & Design Principles Applied
+- **Responsive Storefront Experience**: Built with Bootstrap 5, semantic HTML5, and lightweight vanilla JavaScript. Includes desktop top bar, search with category selector, sticky main navigation, offcanvas mobile drawer, breadcrumbs, and a comprehensive footer.
+- **Strict Customer-Facing Business Rules**:
+  - Only active (`is_active = 1`) products and approved (`is_approved = 1`) reviews are visible to customer storefront shoppers.
+  - Inactive product slugs or non-existent items securely return `404 Not Found`.
+  - All prices and monetary amounts are displayed in Bangladeshi Taka (৳) with proper 2-decimal formatting.
+  - Dynamic discount percentage calculations (`((regular_price - sale_price) / regular_price) * 100`).
+- **Reusable Blade Architecture**:
+  - Master customer layout (`resources/views/layouts/app.blade.php`) with header, category mega-dropdown, search bar, cart/wishlist badge counters, auth navigation, flash alerts, and policy links.
+  - Reusable Product Card Component (`resources/views/components/product-card.blade.php`) handling image fallback, stock status badges, discount tags, star ratings, and responsive layout.
+
+### 2. Modules & Pages Implemented
+- **Homepage (`HomeController@index`, `resources/views/frontend/home.blade.php`)**:
+  - Hero slider carousel featuring promotional banners with call-to-action buttons.
+  - Value proposition & trust badges: Fast Nationwide Delivery, 100% Authentic Products, Cash on Delivery, and 7-Day Easy Returns.
+  - Featured Categories showcase with icons and product counts.
+  - Flash Deals / Special Discounts section with countdown tags.
+  - Promotional dual-banner cards.
+  - Featured / Trending products grid and New Arrivals tabbed presentation.
+  - Official Brand Partners showcase.
+- **Product Catalog Browsing (`ProductCatalogController@index`, `resources/views/frontend/products/index.blade.php`)**:
+  - Full-text search with sanitized keyword input matching product name, SKU, or description.
+  - Multi-facet filtering: Category selection, Brand selection, Stock availability (`in_stock`), and Price range (`min_price`, `max_price`).
+  - Safe SQL price calculation supporting both MySQL and SQLite test environments (`CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS REAL)`).
+  - Multi-criteria sorting: Latest arrivals, Price: Low to High, Price: High to Low, Most Popular, and Name A-Z.
+  - Responsive filter sidebar with mobile filter drawer toggle, active filter pill tags, and clean empty states with search reset.
+- **Category & Brand Browse Pages (`category.blade.php`, `brand.blade.php`)**:
+  - Dedicated category view (`/category/{slug}`) featuring child category quick-pills, parent breadcrumbs, and category-filtered catalog.
+  - Dedicated brand view (`/brand/{slug}`) featuring brand logo, description, and brand-filtered catalog.
+- **Product Detail Page (`ProductCatalogController@show`, `resources/views/frontend/products/show.blade.php`)**:
+  - Interactive multi-image gallery with large preview and clickable thumbnails.
+  - Stock availability badges (`In Stock (X available)` vs `Out of Stock`).
+  - Pricing display with regular price, sale price, and percentage saved tag.
+  - Delivery information box highlighting Inside Dhaka (৳60) and Outside Dhaka (৳120) rates, COD availability, and warranty terms.
+  - Product specifications, description, and customer reviews with star rating distribution and verified review moderation display.
+  - Related products carousel/grid based on category matching.
+  - SEO Meta tags: dynamic page title, meta description, canonical URL, and OpenGraph tags.
+- **Informative & Legal Policy Pages (`PageController`, `resources/views/frontend/pages/`)**:
+  - About Us (`/about-us`): Company mission, core values, and Bangladesh e-commerce vision.
+  - Contact Us (`/contact`): Accessible contact form, physical store address, customer support hotline, email, and live business hours.
+  - Frequently Asked Questions (`/faq`): Categorized accordion covering Ordering, Payment, Delivery, and Returns.
+  - Privacy Policy (`/privacy-policy`): GDPR/local compliance data usage, cookies, and customer data rights.
+  - Terms & Conditions (`/terms-and-conditions`): User agreement, intellectual property, pricing disclaimers, and dispute resolution.
+  - Shipping & Delivery Policy (`/shipping-policy`): Detailed breakdown of Dhaka city vs. outside Dhaka turnaround times, delivery partner network, and tracking instructions.
+  - Return & Refund Policy (`/return-policy`): 7-day hassle-free return window, eligibility criteria, and refund timelines for bKash/Nagad/Cards.
+
+### 3. Verification & Testing
+- Automated test suite (`tests/Feature/CustomerStorefrontTest.php`):
+  - 11 comprehensive feature tests covering homepage rendering, active-only product catalog visibility, inactive product hiding, keyword search, category/brand filters, price range filters, stock filters, product detail page pricing & specs, inactive product 404 response, dedicated category/brand pages, and all 7 policy/static pages (100% PASS).
+- Complete Application Test Suite:
+  - `php artisan test`: **63 passed (273 assertions) — Duration: 3.16s** (100% PASS across all Phase 1-5 suites).
+
+
