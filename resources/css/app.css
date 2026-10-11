@@ -1,0 +1,53 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+    --shopbd-primary: #0f766e;
+    --shopbd-primary-hover: #115e59;
+    --shopbd-accent: #f97316;
+    --shopbd-accent-hover: #ea580c;
+    --shopbd-dark: #0f172a;
+    --shopbd-card-bg: #ffffff;
+    --shopbd-body-bg: #f8fafc;
+    --shopbd-border: #e2e8f0;
+}
+
+body {
+    background-color: var(--shopbd-body-bg);
+    color: #334155;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.text-brand {
+    color: var(--shopbd-primary) !important;
+}
+
+.bg-brand {
+    background-color: var(--shopbd-primary) !important;
+    color: #ffffff;
+}
+
+.btn-brand {
+    background-color: var(--shopbd-primary);
+    border-color: var(--shopbd-primary);
+    color: #ffffff;
+}
+
+.btn-brand:hover, .btn-brand:focus {
+    background-color: var(--shopbd-primary-hover);
+    border-color: var(--shopbd-primary-hover);
+    color: #ffffff;
+}
+
+.btn-accent {
+    background-color: var(--shopbd-accent);
+    border-color: var(--shopbd-accent);
+    color: #ffffff;
+}
+
+.btn-accent:hover, .btn-accent:focus {
+    background-color: var(--shopbd-accent-hover);
+    border-color: var(--shopbd-accent-hover);
+    color: #ffffff;
+}
+
