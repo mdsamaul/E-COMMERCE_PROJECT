@@ -3,6 +3,48 @@
 @section('title', 'ShopBD — Online Shopping Bangladesh | Best Deals & Cash on Delivery')
 @section('meta_description', 'Shop genuine clothing, electronics, home appliances, and groceries in Bangladesh. Enjoy nationwide Cash on Delivery, easy returns, and authentic products.')
 
+@push('structured_data')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "{{ url('/') }}#organization",
+      "name": "ShopBD",
+      "url": "{{ url('/') }}",
+      "logo": "{{ asset('images/logo.png') }}",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+8801700000000",
+        "contactType": "customer service",
+        "areaServed": "BD",
+        "availableLanguage": ["Bengali", "English"]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{{ url('/') }}#website",
+      "url": "{{ url('/') }}",
+      "name": "ShopBD",
+      "description": "Best Online Shopping Experience in Bangladesh",
+      "publisher": {
+        "@id": "{{ url('/') }}#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "{{ url('/products') }}?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}
+</script>
+@endpush
+
 @section('content')
 <!-- Hero Slider -->
 @if($heroBanners->count() > 0)

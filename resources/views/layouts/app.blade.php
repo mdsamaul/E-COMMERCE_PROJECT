@@ -12,11 +12,23 @@
     <link rel="canonical" href="{{ url()->current() }}">
 
     <!-- Open Graph / Social Sharing -->
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:site_name" content="ShopBD">
     <meta property="og:title" content="@yield('title', 'ShopBD — Online Shopping in Bangladesh')">
     <meta property="og:description" content="@yield('meta_description', 'Reliable online shopping with nationwide Cash on Delivery across Bangladesh.')">
     <meta property="og:image" content="@yield('meta_image', asset('images/og-shopbd.jpg'))">
     <meta property="og:url" content="{{ url()->current() }}">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'ShopBD — Online Shopping in Bangladesh')">
+    <meta name="twitter:description" content="@yield('meta_description', 'Reliable online shopping with nationwide Cash on Delivery across Bangladesh.')">
+    <meta name="twitter:image" content="@yield('meta_image', asset('images/og-shopbd.jpg'))">
+
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url('/sitemap.xml') }}">
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    @stack('structured_data')
 
     <!-- Bootstrap 5 & Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">

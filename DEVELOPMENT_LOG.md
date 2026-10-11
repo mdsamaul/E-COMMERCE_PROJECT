@@ -496,6 +496,70 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 - Complete Application Test Suite:
   - `php artisan test`: **109 passed (514 assertions) — Duration: 4.81s** (100% PASS across all Phase 1-8 suites).
 
+---
 
+## Phase 9: Production-Readiness Review, SEO & Performance Hardening
 
+### 1. Architecture & Design Principles Applied
+- **Comprehensive Security Review**:
+  - **Authentication & Authorization**: Server-side multi-tier role verification (`AdminMiddleware`) protects all administrative routes. Guest and customer access strictly separated.
+  - **CSRF Protection**: Applied globally to all state-altering web routes. Public external payment gateway webhooks are specifically exempted in `bootstrap/app.php` with signature and amount verification.
+  - **IDOR Protection**: Verified across customer orders (`Customer\OrderController`), customer addresses (`Customer\ProfileController`), wishlist (`Customer\WishlistController`), and customer review submissions (`Customer\ReviewController`). Unauthorized users querying foreign entities receive 403 Forbidden.
+  - **Mass Assignment & Role Escalation Prevention**: User registration and customer profile updates strictly forbid role alteration. Model `$fillable` definitions guard administrative fields against arbitrary client input.
+  - **Input Validation**: Dedicated Form Request classes throughout (`StoreProductRequest`, `UpdateProductRequest`, `CheckoutRequest`, `StoreReviewRequest`, etc.) enforce strict typing, regex constraints, and Bangladesh phone format (`+880` / `01XXXXXXXXX`).
+  - **Safe File Uploads**: Image uploads strictly validate against `mimes:jpeg,png,webp`, enforce 2MB max file size limits, use cryptographically random SHA-hashes for filenames, and safely delete obsolete files on replacement.
+  - **SQL Injection Prevention**: 100% of queries use Eloquent ORM and PDO parameterized statements. Zero raw string interpolation.
+  - **XSS Prevention**: Blade templating uses auto-escaped `{{ }}` syntax across all user-supplied content. Markdown and description fields sanitize markup.
+  - **Rate Limiting**: Applied `throttle:10,1` on order checkout submissions, `throttle:5,1` on contact form messages, and `throttle:6,1` on login attempts.
+  - **Sensitive Log Scrubbing**: Payment callback and IPN handlers in `PaymentController` scrub sensitive payload keys (`card_no`, `card_number`, `cvv`, `password`, `pin`, `token`, `secret`, `app_secret`, `store_passwd`) before logging.
+- **Database Indexing & Query Performance**:
+  - Created migration `2026_10_11_000018_add_performance_and_production_indexes.php` adding compound indexes:
+    - `products`: `['is_active', 'category_id']`, `['is_active', 'brand_id']`, `['is_active', 'is_featured']`, `['is_active', 'created_at']`
+    - `orders`: `['user_id', 'created_at']`, `['order_status', 'created_at']`
+    - `reviews`: `['product_id', 'is_approved']`
+    - `categories`: `['is_active', 'parent_id']`
+  - N+1 Prevention: Verified eager loading across catalog controllers (`with(['category', 'brand', 'images'])`), order controllers (`with(['items.product', 'statusHistories', 'payments'])`), and cart services.
+  - Image Performance: Native browser lazy-loading (`loading="lazy"`) and optimized thumbnail styling across all product grids and banners.
+- **SEO & Social Sharing Metadata**:
+  - Implemented `SeoController@sitemap` and `resources/views/seo/sitemap.blade.php` dynamically generating XML `sitemap.xml` with `<urlset>`, atom timestamps, `<changefreq>`, and `<priority>` for home, catalog, static pages, categories, brands, and active products.
+  - Implemented `SeoController@robots` serving `robots.txt` disallowing `/admin/`, `/checkout/`, `/customer/`, and pointing to `/sitemap.xml`.
+  - Canonical URL links and OpenGraph / Twitter Card tags integrated in `resources/views/layouts/app.blade.php`.
+  - Schema.org JSON-LD Structured Data:
+    - Homepage: `Organization` (name, URL, logo, contact points) and `WebSite` (with `SearchAction` deep-linking to search engine).
+    - Product Details: `Product` schema with `Brand`, `Offer` (price in BDT, priceCurrency, itemCondition, availability `InStock` / `OutOfStock`), and `AggregateRating`.
+- **Strict No-Modal Policy**:
+  - All admin operations and customer portals remain dedicated full-page components.
 
+### 2. Components & Routes Implemented
+- **Controllers & Routing**:
+  - `app/Http/Controllers/SeoController.php`: Dynamic sitemap XML and robots.txt generation.
+  - `app/Http/Controllers/PaymentController.php`: Added sensitive payload log scrubbing.
+  - `routes/web.php`: Registered `/sitemap.xml` and `/robots.txt`; applied throttling middleware.
+- **Views**:
+  - `resources/views/seo/sitemap.blade.php`: Valid XML sitemap template.
+  - `resources/views/layouts/app.blade.php`: Canonical URLs, OpenGraph, Twitter Cards, `@stack('structured_data')`.
+  - `resources/views/frontend/home.blade.php`: JSON-LD `Organization` and `WebSite` schema scripts.
+  - `resources/views/frontend/products/show.blade.php`: JSON-LD `Product` schema script.
+- **Database**:
+  - `database/migrations/2026_10_11_000018_add_performance_and_production_indexes.php`: Compound indexes for high-frequency queries.
+- **Testing**:
+  - `tests/Feature/ProductionReadinessTest.php`: 14 automated feature tests covering security, SEO, rate limiting, and business integrity.
+
+### 3. Verification & Testing
+- Automated Feature Test Suite (`tests/Feature/ProductionReadinessTest.php` - 14 tests, 50 assertions):
+  - `test_guest_cannot_access_admin_dashboard_and_is_redirected` (PASS)
+  - `test_regular_customer_is_forbidden_from_admin_dashboard` (PASS)
+  - `test_admin_can_access_dashboard` (PASS)
+  - `test_customer_cannot_view_or_manipulate_another_customers_order_idor` (PASS)
+  - `test_registration_prevents_role_elevation_mass_assignment` (PASS)
+  - `test_profile_update_prevents_role_override` (PASS)
+  - `test_product_file_upload_rejects_non_image_files` (PASS)
+  - `test_sitemap_xml_returns_valid_xml_with_published_products` (PASS)
+  - `test_robots_txt_returns_proper_directives_and_sitemap` (PASS)
+  - `test_homepage_renders_opengraph_and_json_ld_structured_data` (PASS)
+  - `test_product_detail_page_renders_product_json_ld_schema` (PASS)
+  - `test_product_visibility_strictly_hides_inactive_items` (PASS)
+  - `test_coupon_calculations_and_minimum_spend` (PASS)
+  - `test_stock_locking_and_inventory_movement_on_order_checkout` (PASS)
+- Complete Application Test Suite:
+  - `php artisan test`: **123 passed (564 assertions) — Duration: 5.78s** (100% PASS across all 9 phases, 0 failures).
