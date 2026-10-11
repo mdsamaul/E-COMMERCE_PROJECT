@@ -30,6 +30,8 @@ class Product extends Model
         'low_stock_threshold',
         'is_featured',
         'is_active',
+        'price',
+        'stock',
     ];
 
     protected function casts(): array
@@ -96,8 +98,19 @@ class Product extends Model
     protected function price(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->effective_price
+            get: fn () => $this->effective_price,
+            set: fn ($value) => ['regular_price' => $value]
         );
+    }
+
+    public function getStockAttribute(): int
+    {
+        return (int) ($this->attributes['stock_quantity'] ?? 0);
+    }
+
+    public function setStockAttribute($value): void
+    {
+        $this->attributes['stock_quantity'] = (int) $value;
     }
 
     protected function effectivePrice(): Attribute
