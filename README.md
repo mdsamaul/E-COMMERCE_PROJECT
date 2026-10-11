@@ -1,66 +1,139 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ShopBD — Single-Vendor E-Commerce Platform for Bangladesh
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel 11](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP 8.2](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net/)
+[![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![Tests](https://img.shields.io/badge/Tests-131%20Passed%20(608%20Assertions)-2ea44f?style=flat&logo=githubactions&logoColor=white)](#automated-testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## About Laravel
+**ShopBD** is a fast, secure, single-vendor multi-category e-commerce platform built on **Laravel 11** and **Bootstrap 5**, tailored specifically for the Bangladeshi market. It includes native BDT (৳) currency handling, inside/outside Dhaka dynamic delivery rates, dual-credential authentication (Email or BD Mobile Number), Cash on Delivery (COD), optional payment gateway support (SSLCOMMERZ, bKash), and courier logistics integration (Steadfast, Pathao, Mock).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Key Highlights & Architectural Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Bangladesh-Native Commerce Engine**:
+  - Currency: Bangladeshi Taka (`৳` / BDT) with strict `DECIMAL(12,2)` precision.
+  - Delivery Fees: Dynamic Dhaka City (৳60) vs. Nationwide Outside Dhaka (৳120), with configurable free shipping thresholds.
+  - Dual Login: Customers and administrators can authenticate with either **Email Address** OR **Bangladeshi Mobile Number** (`01XXXXXXXXX`).
+  - Strict No-Modal Rule: All major administrative creation and edit screens (Products, Categories, Brands, Coupons, Banners, Settings) are dedicated full-page responsive views.
+- **Robust Order Lifecycle & Concurrency**:
+  - Atomic checkout with pessimistic row locking (`lockForUpdate()`) preventing inventory overselling race conditions.
+  - Idempotency token enforcement preventing duplicate orders from rapid repeated clicks.
+  - Immutable historical snapshots (`OrderItem`) preserving purchased product names, SKUs, purchase costs, and sale prices.
+  - Order state machine with automated, double-restock-safe inventory restoration upon order cancellation or return.
+- **Bangladesh Payment Gateways & Courier Logistics**:
+  - **Cash on Delivery (COD)**: 100% autonomous, zero external credentials required.
+  - **SSLCOMMERZ v4 & bKash Tokenized Checkout**: Decoupled strategy adapters with strict callback verification and PCI-DSS compliance (zero card details stored).
+  - **Courier Logistics**: Steadfast REST API, Pathao Aladdin API, and a built-in Mock Courier for offline/sandbox testing.
+- **Shared Hosting & cPanel Ready**:
+  - Precompiled static assets (`npm run build`) eliminating Node.js runtime requirement on shared hosting.
+  - Root and public `.htaccess` security hardening with web root isolation preventing access to `.env` or application source code.
+  - Built-in deployment smoke test (`php artisan shopbd:smoke-test`), automated backup scripts, and cPanel deployment guide.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## System Requirements
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **PHP**: >= 8.2 with extensions: `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `gd`, `json`, `mbstring`, `openssl`, `pdo_mysql`, `pdo_sqlite`, `tokenizer`, `xml`, `zip`.
+- **Database**: MySQL 5.7+ / 8.0+ or MariaDB 10.3+. (SQLite in-memory used for fast automated testing).
+- **Composer**: 2.x
+- **Node.js / npm**: Node 18+ (for local asset compilation only; shared hosting does not require Node).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Quick Start & Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 1. Clone & Install Dependencies
+```bash
+git clone https://github.com/mdsamaul/E-COMMERCE_PROJECT.git shopbd
+cd shopbd
+composer install
+npm install
+npm run build
+```
 
-### Premium Partners
+### 2. Environment Setup
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Configure your `.env` database credentials:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=shopbd
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Contributing
+### 3. Database Migration & Seeding
+```bash
+php artisan migrate --seed
+php artisan storage:link
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Run Development Server
+```bash
+php artisan serve
+```
+Visit `http://localhost:8000` in your web browser.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Default Demo Credentials
 
-## Security Vulnerabilities
+| Role | Email / Mobile | Password | Access Path |
+|---|---|---|---|
+| **Super Administrator** | `admin@shopbd.com` / `01711000000` | `password123` | `/admin/login` |
+| **Demo Customer** | `customer@shopbd.com` / `01712000000` | `password123` | `/login` |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+*To create a new administrator safely from CLI without exposing credentials in seeds:*
+```bash
+php artisan shopbd:create-admin
+```
+
+---
+
+## Automated Testing & Health Diagnostics
+
+### Running the Test Suite
+The complete test suite runs against in-memory SQLite and requires zero external database dependencies:
+```bash
+php artisan test
+```
+*Current test suite status: **131 tests passed (608 assertions), 0 failures**.*
+
+### Running the Production Smoke Test
+Verify deployment readiness, file permissions, database state, and security boundaries:
+```bash
+php artisan shopbd:smoke-test
+```
+
+---
+
+## Documentation & Architecture Guides
+
+Detailed documentation is available in the repository:
+- [PROJECT_PLAN.md](PROJECT_PLAN.md) — Complete 10-phase master architecture roadmap and feature checklist.
+- [DATABASE_DESIGN.md](DATABASE_DESIGN.md) — Schema definitions for all 21 tables, foreign keys, and indexes.
+- [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md) — Comprehensive phase-by-phase implementation and audit log.
+- [cPanel Shared Hosting Deployment Guide](docs/CPANEL_SHARED_HOSTING_DEPLOYMENT_GUIDE.md) — Step-by-step cPanel production deployment runbook.
+- [Payment & Courier Integration Plan](docs/PAYMENT_AND_COURIER_INTEGRATION_PLAN.md) — Official gateway & logistics API specs.
+
+---
+
+## Shared Hosting Deployment Automation
+
+Scripts for one-step packaging, deployment, and backups are provided in `scripts/`:
+- `scripts/build-production-package.ps1` — Builds Vite assets and creates a production `.zip` ready for cPanel File Manager upload.
+- `scripts/deploy-cpanel.sh` — Run via cPanel Terminal/SSH to set permissions, optimize autoloader, migrate, and cache routes.
+- `scripts/backup-cpanel.sh` — Nightly cron-compatible database and uploaded media backup script with 14-day rotation.
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This software is released under the [MIT License](LICENSE).
