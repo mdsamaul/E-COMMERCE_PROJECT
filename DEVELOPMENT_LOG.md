@@ -63,5 +63,10 @@
 - `php artisan test`: 2 passed (Unit and Feature baseline).
 - `npm run build`: Successfully compiled assets to `public/build` in 11.68s.
 - `php artisan config:clear`: Successful.
+- `C:\xampp\php\php.ini`: Enabled `extension=zip` and `extension=gd`.
+- `MySQL Port 3306`: Verified active and responsive (`TcpTestSucceeded: True`).
+- `MySQL Database`: Created `shopbd` database and executed `php artisan migrate` successfully (created users, cache, and jobs tables).
+- `UI/UX Directive Registered`: Strict rule to use dedicated full-page screens for all major creation/editing interfaces (no cramped modals).
 
 ---
+

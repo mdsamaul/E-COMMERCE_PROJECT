@@ -55,6 +55,8 @@ ShopBD adheres to a robust, clean, and maintainable Laravel MVC + Service Layer 
 2. **Never Trust the Client**: Cart calculations, prices, discounts, and inventory availability are recomputed strictly on the server during checkout.
 3. **Historical Data Preservation**: Orders store product snapshots (title, SKU, purchase price, selling price) so historical accounting remains immutable even if products are edited or deleted.
 4. **Bangladesh Native**: BDT (৳) currency handling, division/district-based shipping calculations (Inside Dhaka vs. Outside Dhaka), local phone number format validation (`+8801...` / `01...`), and Cash on Delivery (COD) as default payment.
+5. **Dedicated Full-Page Creation Views (Strict No-Modal Rule for Major Forms)**:
+   Per client requirement (*"amar kono boro create page modal a na diye full screen a create korio"*), all major entity creation and editing screens (Products, Categories, Brands, Coupons, Banners, Orders, Settings) MUST be designed as dedicated, full-width responsive pages (`create.blade.php`, `edit.blade.php`). Never use cramped modal dialogs for entity creation or multi-field forms. Modals are strictly reserved for minor confirmations (e.g. Delete Confirmation Dialog).
 
 ---
 
