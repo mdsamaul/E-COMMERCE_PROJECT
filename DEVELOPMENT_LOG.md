@@ -420,5 +420,82 @@ Created 20 Eloquent models with mass-assignment protection (`$fillable`), type c
 - Complete Application Test Suite:
   - `php artisan test`: **95 passed (443 assertions) — Duration: 3.88s** (100% PASS across all Phase 1-7 suites).
 
+---
+
+## [Phase 8] Optional Payment Gateway & Courier Integrations Architecture
+**Date**: October 11, 2026  
+**Status**: COMPLETED  
+**Engineer**: Senior Laravel Developer & Software Architect (Antigravity AI)  
+
+### 1. Architecture & Design Principles Applied
+- **Modular Adapter & Strategy Pattern**:
+  - Payment Gateways and Courier logistics are designed around decoupled interfaces (`PaymentGatewayInterface` and `CourierServiceInterface`).
+  - Cash on Delivery (COD) remains 100% active and autonomous out of the box with zero external credentials.
+  - Third-party gateways (SSLCOMMERZ, bKash) and couriers (Steadfast, Pathao) remain in an inert, disabled state until merchant credentials are explicitly supplied via environment variables.
+- **Official API Documentation Adherence**:
+  - **SSLCOMMERZ**: Implements official v4 session initiation (`gwprocess/v4/api.php`) and back-office order validation API (`validationserverAPI.php`) with verification of `val_id`, `store_id`, `store_passwd`, `currency === 'BDT'`, and exact monetary amount matching.
+  - **bKash**: Implements official Tokenized Checkout v1.2.0-beta (`grantToken`, `create`, `execute`) with server-side bearer token management, amount validation, and order invoice matching.
+  - **Steadfast Courier**: Implements official REST API v1 (`/create_order`, `/status_by_invoice`) using `Api-Key` and `Secret-Key`.
+  - **Pathao Courier**: Implements official Aladdin API v1 OAuth2 token grant and `/orders` endpoint.
+- **Zero Card Data Storage (PCI-DSS Compliance)**:
+  - ShopBD never accepts, handles, or stores debit/credit card numbers, CVVs, or bank credentials on its servers. Payments are handled via hosted redirection.
+- **Strict Callback Idempotency & Duplicate Payment Prevention**:
+  - `PaymentGatewayManager` enforces idempotency before mutating orders or adding records to the `payments` table. Repeated or replayed callbacks respond gracefully without duplicate ledger transactions.
+- **Safe Logistics Tracking & Isolated Mock Adapter**:
+  - Implemented `MockCourierService` generating deterministic consignment IDs and `TRK-BD-XXXX` tracking codes for complete end-to-end testing without external network dependencies.
+  - Orders dispatched to couriers auto-advance from `processing` to `shipped` via `OrderTransitionService` and record courier provider, tracking code, consignment ID, and timestamps.
+  - Unconfigured external couriers log errors safely without crashing operations.
+
+### 2. Components & Routes Implemented
+- **Contracts**:
+  - `app/Contracts/PaymentGatewayInterface.php`
+  - `app/Contracts/CourierServiceInterface.php`
+- **Payment Drivers & Management**:
+  - `app/Services/Payment/CashOnDeliveryGateway.php`
+  - `app/Services/Payment/SslCommerzPaymentGateway.php`
+  - `app/Services/Payment/BkashPaymentGateway.php`
+  - `app/Services/Payment/PaymentGatewayManager.php`
+- **Courier Drivers & Management**:
+  - `app/Services/Courier/MockCourierService.php`
+  - `app/Services/Courier/SteadfastCourierService.php`
+  - `app/Services/Courier/PathaoCourierService.php`
+  - `app/Services/Courier/CourierManager.php`
+- **Controllers & Routing**:
+  - `app/Http/Controllers/PaymentController.php`: Public callback and IPN handlers with CSRF exemption in `bootstrap/app.php`.
+  - `app/Http/Controllers/Admin/OrderController.php`: Added courier dispatch and live tracking refresh endpoints.
+  - `app/Http/Controllers/CheckoutController.php`: Injects `PaymentGatewayManager` and handles gateway redirection.
+  - `routes/web.php`: Registered `/payment/callback/{gateway}`, `/payment/ipn/{gateway}`, and admin courier routes.
+  - `config/shopbd.php`: Added comprehensive `payment` and `courier` configuration arrays.
+- **Database & Model**:
+  - Migration `database/migrations/2026_10_11_000017_add_courier_and_gateway_columns_to_orders_table.php` (adds `courier_provider`, `courier_tracking_id`, `courier_consignment_id`, `courier_status`, `courier_error`, `courier_response`, `courier_dispatched_at`, `gateway_transaction_id`).
+  - `app/Models/Order.php`: Added fillable attributes, casts, `isDispatchedToCourier()`, and `canDispatchToCourier()`.
+- **UI Enhancements**:
+  - `resources/views/frontend/checkout/index.blade.php`: Dynamic payment selection between COD and active gateways.
+  - `resources/views/frontend/checkout/confirmation.blade.php`: Dynamic payment method name, transaction ID, and flash messages.
+  - `resources/views/customer/orders/show.blade.php`: Dedicated courier tracking card with tracking ID and provider name.
+  - `resources/views/admin/orders/show.blade.php`: Dedicated Courier Logistics card with provider selector and live tracking refresh (Strict No-Modal Rule).
+- **Documentation**:
+  - `docs/PAYMENT_AND_COURIER_INTEGRATION_PLAN.md`: Full specification, official API endpoints, environment variables, security checklist, and testing instructions.
+
+### 3. Verification & Testing
+- Automated Feature Test Suite (`tests/Feature/PaymentAndCourierIntegrationTest.php` - 14 tests):
+  - `test_cash_on_delivery_gateway_is_always_configured_without_external_credentials` (PASS)
+  - `test_payment_gateway_manager_identifies_active_and_disabled_gateways` (PASS)
+  - `test_sslcommerz_reports_unconfigured_when_credentials_are_absent` (PASS)
+  - `test_sslcommerz_builds_correct_official_payload_when_configured` (PASS)
+  - `test_sslcommerz_validation_rejects_currency_mismatch` (PASS)
+  - `test_sslcommerz_validation_rejects_amount_mismatch` (PASS)
+  - `test_callback_processing_is_idempotent_and_prevents_duplicate_payments` (PASS)
+  - `test_mock_courier_service_dispatches_and_tracks_without_external_credentials` (PASS)
+  - `test_steadfast_and_pathao_safely_report_unconfigured_when_keys_missing` (PASS)
+  - `test_courier_manager_dispatches_order_and_advances_order_status_to_shipped` (PASS)
+  - `test_admin_can_dispatch_order_via_http_endpoint` (PASS)
+  - `test_admin_can_refresh_courier_tracking_via_http_endpoint` (PASS)
+  - `test_customer_order_details_displays_courier_tracking_id_when_dispatched` (PASS)
+  - `test_checkout_page_renders_payment_method_options` (PASS)
+- Complete Application Test Suite:
+  - `php artisan test`: **109 passed (514 assertions) — Duration: 4.81s** (100% PASS across all Phase 1-8 suites).
+
+
 
 

@@ -22,6 +22,7 @@ use App\Http\Controllers\Customer\ReviewController as CustomerReviewController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductCatalogController;
@@ -59,6 +60,10 @@ Route::prefix('checkout')->name('checkout.')->group(function () {
     Route::post('/', [CheckoutController::class, 'store'])->name('store');
 });
 Route::get('/order/confirmation/{order_number}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
+
+// Online Payment Gateway Callbacks & IPN
+Route::match(['get', 'post'], '/payment/callback/{gateway}', [PaymentController::class, 'callback'])->name('payment.callback');
+Route::post('/payment/ipn/{gateway}', [PaymentController::class, 'ipn'])->name('payment.ipn');
 
 // Informative Pages
 Route::get('/about-us', [PageController::class, 'about'])->name('pages.about');
@@ -136,6 +141,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::post('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::post('orders/{order}/payment', [AdminOrderController::class, 'updatePayment'])->name('orders.update-payment');
+        Route::post('orders/{order}/dispatch-courier', [AdminOrderController::class, 'dispatchCourier'])->name('orders.dispatch-courier');
+        Route::post('orders/{order}/track-courier', [AdminOrderController::class, 'trackCourier'])->name('orders.track-courier');
         Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
 
         // Categories CRUD

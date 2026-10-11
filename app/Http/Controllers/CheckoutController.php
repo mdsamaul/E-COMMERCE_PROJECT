@@ -17,7 +17,8 @@ class CheckoutController extends Controller
 {
     public function __construct(
         protected CartService $cartService,
-        protected OrderService $orderService
+        protected OrderService $orderService,
+        protected \App\Services\Payment\PaymentGatewayManager $paymentManager
     ) {}
 
     /**
@@ -55,6 +56,9 @@ class CheckoutController extends Controller
         $districts = $this->getBangladeshDistricts();
         $idempotencyKey = Str::uuid()->toString();
 
+        $availableGateways = $this->paymentManager->getAvailableGateways();
+        $allGateways = $this->paymentManager->getAllGatewaysStatus();
+
         return view('frontend.checkout.index', [
             'totals' => $totals,
             'cart' => $cart,
@@ -63,6 +67,8 @@ class CheckoutController extends Controller
             'districts' => $districts,
             'idempotencyKey' => $idempotencyKey,
             'warnings' => $totals['warnings'],
+            'availableGateways' => $availableGateways,
+            'allGateways' => $allGateways,
         ]);
     }
 
@@ -91,10 +97,24 @@ class CheckoutController extends Controller
     public function store(CheckoutRequest $request): RedirectResponse
     {
         try {
+            $validated = $request->validated();
             $order = $this->orderService->processCheckout(
-                data: $request->validated(),
+                data: $validated,
                 user: auth()->user()
             );
+
+            // If an online gateway was chosen, initiate payment redirect
+            $method = $order->payment_method;
+            if ($method !== 'cod') {
+                $initiation = $this->paymentManager->initiatePayment($order, $method);
+
+                if ($initiation['success'] && !empty($initiation['redirect_url'])) {
+                    return redirect()->away($initiation['redirect_url']);
+                }
+
+                return redirect()->route('checkout.confirmation', $order->order_number)
+                    ->with('warning', "Order created, but online payment could not be opened: " . ($initiation['message'] ?? 'Please pay via Cash on Delivery.'));
+            }
 
             return redirect()->route('checkout.confirmation', $order->order_number)
                 ->with('success', "Order #{$order->order_number} has been placed successfully!");

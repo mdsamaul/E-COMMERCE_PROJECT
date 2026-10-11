@@ -40,7 +40,6 @@
     <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" onsubmit="return handleCheckoutSubmit(this);">
         @csrf
         <input type="hidden" name="idempotency_key" value="{{ $idempotencyKey }}">
-        <input type="hidden" name="payment_method" value="cod">
 
         <div class="row g-4">
             <!-- Left Column: Shipping & Customer Details Form -->
@@ -160,9 +159,9 @@
                     </div>
                     <div class="card-body p-4">
                         <!-- COD Option Card -->
-                        <div class="p-3 border rounded-3 bg-light border-success">
+                        <div class="p-3 border rounded-3 bg-light border-success mb-3">
                             <div class="form-check d-flex align-items-start gap-3">
-                                <input class="form-check-input mt-1" type="radio" name="payment_method_display" id="paymentCod" checked disabled>
+                                <input class="form-check-input mt-1" type="radio" name="payment_method" id="paymentCod" value="cod" {{ old('payment_method', 'cod') === 'cod' ? 'checked' : '' }} required>
                                 <div class="flex-grow-1">
                                     <label class="form-check-label fw-bold text-dark d-block fs-6" for="paymentCod">
                                         <i class="bi bi-cash-stack text-success me-2"></i> Cash on Delivery (COD)
@@ -179,12 +178,53 @@
                             </div>
                         </div>
 
-                        <div class="mt-3 p-3 bg-white border rounded-3 small text-muted">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-credit-card text-secondary"></i>
-                                <span>Online Payments (bKash, Nagad, Cards) will be available in the next release. Cash on Delivery is 100% active.</span>
+                        <!-- SSLCOMMERZ Gateway (Active if configured) -->
+                        @if(isset($availableGateways['sslcommerz']))
+                            <div class="p-3 border rounded-3 bg-white mb-3">
+                                <div class="form-check d-flex align-items-start gap-3">
+                                    <input class="form-check-input mt-1" type="radio" name="payment_method" id="paymentSslcz" value="sslcommerz" {{ old('payment_method') === 'sslcommerz' ? 'checked' : '' }}>
+                                    <div class="flex-grow-1">
+                                        <label class="form-check-label fw-bold text-dark d-block fs-6" for="paymentSslcz">
+                                            <i class="bi bi-credit-card-2-front text-primary me-2"></i> Pay Online via SSLCOMMERZ
+                                        </label>
+                                        <p class="text-muted small mb-0 mt-1">
+                                            Instant & secure payment via Visa, Mastercard, bKash, Nagad, Rocket, Upay, and 30+ Bangladeshi banks.
+                                        </p>
+                                        <div class="mt-2">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                                <i class="bi bi-lock me-1"></i> 128-bit SSL Secured
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        @endif
+
+                        <!-- bKash Gateway (Active if configured) -->
+                        @if(isset($availableGateways['bkash']))
+                            <div class="p-3 border rounded-3 bg-white mb-3">
+                                <div class="form-check d-flex align-items-start gap-3">
+                                    <input class="form-check-input mt-1" type="radio" name="payment_method" id="paymentBkash" value="bkash" {{ old('payment_method') === 'bkash' ? 'checked' : '' }}>
+                                    <div class="flex-grow-1">
+                                        <label class="form-check-label fw-bold text-dark d-block fs-6" for="paymentBkash">
+                                            <i class="bi bi-phone text-danger me-2"></i> bKash Direct Payment
+                                        </label>
+                                        <p class="text-muted small mb-0 mt-1">
+                                            Pay directly from your personal bKash mobile account using official bKash Tokenized Checkout.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if(!isset($availableGateways['sslcommerz']) && !isset($availableGateways['bkash']))
+                            <div class="p-3 bg-white border rounded-3 small text-muted">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-info-circle text-secondary"></i>
+                                    <span>Online gateways (SSLCOMMERZ / bKash) are currently disabled pending merchant credentials. Cash on Delivery is 100% active.</span>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
