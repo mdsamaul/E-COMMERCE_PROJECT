@@ -125,6 +125,15 @@ class ProductionReadinessTest extends TestCase
         // Customer B attempts to cancel Customer A's order
         $responseCancel = $this->actingAs($customerB)->post(route('customer.orders.cancel', $orderA->order_number));
         $responseCancel->assertForbidden();
+
+        // Customer B attempts to view Customer A's confirmation page (IDOR check)
+        $responseConfirmation = $this->actingAs($customerB)->get(route('checkout.confirmation', $orderA->order_number));
+        $responseConfirmation->assertForbidden();
+
+        // Unauthorized guest attempts to view Customer A's confirmation page
+        $this->app['auth']->forgetGuards();
+        $responseGuest = $this->get(route('checkout.confirmation', $orderA->order_number));
+        $responseGuest->assertRedirect(route('login'));
     }
 
     public function test_registration_prevents_role_elevation_mass_assignment(): void

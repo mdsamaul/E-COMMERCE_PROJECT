@@ -28,6 +28,15 @@ class OrderStatusHistory extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (OrderStatusHistory $history) {
+            if (!$history->created_at) {
+                $history->created_at = now();
+            }
+        });
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

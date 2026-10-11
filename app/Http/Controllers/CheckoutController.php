@@ -103,6 +103,9 @@ class CheckoutController extends Controller
                 user: auth()->user()
             );
 
+            // Record order in session for guest confirmation authorization
+            session()->put('last_placed_order_number', $order->order_number);
+
             // If an online gateway was chosen, initiate payment redirect
             $method = $order->payment_method;
             if ($method !== 'cod') {
@@ -130,11 +133,23 @@ class CheckoutController extends Controller
     /**
      * Show order confirmation page.
      */
-    public function confirmation(string $orderNumber): View
+    public function confirmation(string $orderNumber): View|\Illuminate\Http\RedirectResponse
     {
         $order = Order::where('order_number', $orderNumber)
             ->with(['items.product.primaryImage', 'coupon', 'statusHistories'])
             ->firstOrFail();
+
+        // Prevent IDOR: Authenticated users can only view their own orders (or admin)
+        if (auth()->check()) {
+            if ($order->user_id && $order->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+                abort(403, 'Unauthorized access to this order confirmation.');
+            }
+        } else {
+            // Unauthenticated guests can only view orders placed during the current browser session
+            if ($order->user_id && session('last_placed_order_number') !== $order->order_number) {
+                return redirect()->route('login')->with('warning', 'Please log in to view this order confirmation.');
+            }
+        }
 
         return view('frontend.checkout.confirmation', [
             'order' => $order,

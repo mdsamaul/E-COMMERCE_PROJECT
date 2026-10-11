@@ -52,12 +52,12 @@ class ProductCatalogController extends Controller
         // 4. Price range filter
         if ($request->filled('min_price')) {
             $minPrice = (float) $request->input('min_price');
-            $query->whereRaw('CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS REAL) >= ?', [$minPrice]);
+            $query->whereRaw('CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS DECIMAL(12,2)) >= ?', [$minPrice]);
         }
 
         if ($request->filled('max_price')) {
             $maxPrice = (float) $request->input('max_price');
-            $query->whereRaw('CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS REAL) <= ?', [$maxPrice]);
+            $query->whereRaw('CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS DECIMAL(12,2)) <= ?', [$maxPrice]);
         }
 
         // 5. In-stock filter
@@ -67,8 +67,8 @@ class ProductCatalogController extends Controller
 
         // 6. Sorting
         match ($request->input('sort')) {
-            'price_low' => $query->orderBy(DB::raw('COALESCE(sale_price, regular_price)'), 'asc'),
-            'price_high' => $query->orderBy(DB::raw('COALESCE(sale_price, regular_price)'), 'desc'),
+            'price_low' => $query->orderBy(DB::raw('CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS DECIMAL(12,2))'), 'asc'),
+            'price_high' => $query->orderBy(DB::raw('CAST(COALESCE(NULLIF(sale_price, 0), regular_price) AS DECIMAL(12,2))'), 'desc'),
             'name_asc' => $query->orderBy('name', 'asc'),
             'popular' => $query->orderBy('is_featured', 'desc')->latest('id'),
             default => $query->latest('id'),

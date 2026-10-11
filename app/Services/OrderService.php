@@ -12,10 +12,12 @@ use App\Models\OrderStatusHistory;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
+use App\Contracts\OrderNotificationInterface;
 use App\Rules\BangladeshPhone;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -24,8 +26,11 @@ class OrderService
 {
     public function __construct(
         protected CartService $cartService,
-        protected AuthService $authService
-    ) {}
+        protected AuthService $authService,
+        protected ?OrderNotificationInterface $notificationManager = null
+    ) {
+        $this->notificationManager = $this->notificationManager ?? app(OrderNotificationInterface::class);
+    }
 
     /**
      * Process checkout atomically with row-locking, inventory validation,
@@ -178,8 +183,8 @@ class OrderService
                 'discount_amount' => $discountAmount,
                 'coupon_id' => $coupon ? $coupon->id : null,
                 'total_amount' => $totalAmount,
-                'payment_method' => 'cod',
-                'payment_status' => 'unpaid', // Cash on Delivery is strictly unpaid until delivery
+                'payment_method' => !empty($data['payment_method']) ? strtolower(trim($data['payment_method'])) : 'cod',
+                'payment_status' => 'unpaid', // Unpaid until collection (COD) or gateway callback
                 'order_status' => 'pending',
                 'delivery_notes' => !empty($data['delivery_notes']) ? trim($data['delivery_notes']) : null,
             ]);
@@ -232,11 +237,15 @@ class OrderService
             }
 
             // 10. Initial Order Status History
+            $initialRemarks = ($order->payment_method === 'cod')
+                ? 'Order placed successfully with Cash on Delivery.'
+                : 'Order placed awaiting payment via ' . strtoupper($order->payment_method) . '.';
+
             OrderStatusHistory::create([
                 'order_id' => $order->id,
                 'from_status' => null,
                 'to_status' => 'pending',
-                'remarks' => 'Order placed successfully with Cash on Delivery.',
+                'remarks' => $initialRemarks,
                 'changed_by_user_id' => $orderUser ? $orderUser->id : null,
             ]);
 
@@ -256,6 +265,15 @@ class OrderService
         if ($idempotencyKey) {
             $cacheKey = "checkout_idempotency_" . md5($idempotencyKey);
             Cache::put($cacheKey, $order->id, now()->addMinutes(30));
+        }
+
+        // 13. Dispatch Order Placed Notifications (SMS & Email)
+        if ($this->notificationManager) {
+            try {
+                $this->notificationManager->sendOrderPlaced($order);
+            } catch (\Throwable $e) {
+                Log::warning("[OrderService] Order placement notification error: " . $e->getMessage());
+            }
         }
 
         return $order->load(['items', 'coupon', 'statusHistories']);

@@ -88,7 +88,7 @@ class CartController extends Controller
     /**
      * Update cart item quantity.
      */
-    public function update(Request $request, int $id): JsonResponse|RedirectResponse
+    public function update(Request $request, int|string $id): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
@@ -96,7 +96,7 @@ class CartController extends Controller
 
         try {
             $this->cartService->updateItem(
-                itemId: $id,
+                itemId: (int) $id,
                 quantity: (int) $validated['quantity'],
                 user: auth()->user()
             );
@@ -129,9 +129,9 @@ class CartController extends Controller
     /**
      * Remove an item from the cart.
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(int|string $id): RedirectResponse
     {
-        $this->cartService->removeItem($id, auth()->user());
+        $this->cartService->removeItem((int) $id, auth()->user());
 
         return back()->with('success', 'Item removed from your cart.');
     }
