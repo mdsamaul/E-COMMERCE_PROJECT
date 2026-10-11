@@ -265,10 +265,10 @@
                         @endauth
 
                         <!-- Cart Indicator -->
-                        <a href="{{ route('products.index') }}" class="btn btn-sm btn-light border position-relative" title="Shopping Cart">
+                        <a href="{{ route('cart.index') }}" class="btn btn-sm btn-light border position-relative" title="Shopping Cart">
                             <i class="bi bi-cart3 fs-6"></i>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCountBadge">
-                                0
+                                {{ $headerCartCount ?? 0 }}
                             </span>
                         </a>
                     </div>
@@ -333,6 +333,10 @@
             <div class="list-group list-group-flush">
                 <a href="{{ route('home') }}" class="list-group-item list-group-item-action fw-bold"><i class="bi bi-house me-2"></i> Home</a>
                 <a href="{{ route('products.index') }}" class="list-group-item list-group-item-action fw-bold"><i class="bi bi-box-seam me-2"></i> All Products</a>
+                <a href="{{ route('cart.index') }}" class="list-group-item list-group-item-action fw-bold text-shop-primary">
+                    <i class="bi bi-cart3 me-2"></i> Shopping Cart
+                    <span class="badge bg-danger rounded-pill float-end">{{ $headerCartCount ?? 0 }}</span>
+                </a>
 
                 <div class="p-2 px-3 text-uppercase text-muted small fw-bold mt-2">Categories</div>
                 @foreach(\App\Models\Category::active()->root()->orderBy('sort_order')->take(8)->get() as $cat)
@@ -368,6 +372,26 @@
                 <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
                     <i class="bi bi-exclamation-octagon-fill me-2 fs-5 align-middle"></i>
                     <span>{{ session('error') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('warning'))
+            <div class="container mt-3">
+                <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5 align-middle"></i>
+                    <span>{{ session('warning') }}</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('info'))
+            <div class="container mt-3">
+                <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="bi bi-info-circle-fill me-2 fs-5 align-middle"></i>
+                    <span>{{ session('info') }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             </div>

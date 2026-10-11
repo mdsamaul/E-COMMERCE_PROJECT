@@ -23,6 +23,11 @@ class RegisterController extends Controller
     {
         $user = $this->authService->registerCustomer($request->validated());
 
+        $guestSessionId = $request->session()->get('cart_token') ?: $request->session()->getId();
+        if ($guestSessionId) {
+            app(\App\Services\CartService::class)->mergeGuestCartToUser($guestSessionId, $user);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->route('customer.profile')->with('success', 'Your account has been created successfully! Welcome to ShopBD, ' . $user->name . '.');
